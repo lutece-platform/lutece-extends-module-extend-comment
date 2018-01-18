@@ -12,7 +12,7 @@ CREATE TABLE extend_comment (
 	ip_address VARCHAR(100) NOT NULL,
 	comment LONG VARCHAR NOT NULL,
 	is_published SMALLINT default 0 NOT NULL,
-	date_last_modif TIMESTAMP,
+	date_last_modif TIMESTAMP default '1980-01-01' NOT NULL,
 	id_parent_comment INT DEFAULT 0 NOT NULL,
 	is_admin_comment SMALLINT default 0 NOT NULL,
 	lutece_user_name VARCHAR(255),
