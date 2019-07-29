@@ -64,6 +64,8 @@ public final class CommentConstants
     public static final String MESSAGE_CONFIRM_REMOVE_COMMENT = "module.extend.comment.message.confirm.removeComment";
     public static final String MESSAGE_ERROR_GENERIC_MESSAGE = "module.extend.comment.message.error.genericMessage";
     public static final String MESSAGE_NOTIFY_SUBJECT = "module.extend.comment.message.notify.subject";
+    public static final String MESSAGE_ERROR_CANNOT_MODIFY_USER_COMMENT = "module.extend.comment.message.error.cannotModifyUserComment";
+
     public static final String MESSAGE_ERROR_CANNOT_DELETE = "module.extend.comment.message.error.cannotDelete";
 
     // PARAMETERS
@@ -72,6 +74,7 @@ public final class CommentConstants
     public static final String PARAMETER_ID_EXTENDABLE_RESOURCE = "idExtendableResource";
     public static final String PARAMETER_EXTENDABLE_RESOURCE_TYPE = "extendableResourceType";
     public static final String PARAMETER_ID_COMMENT = "idComment";
+    public static final String PARAMETER_ID_PARENT_COMMENT = "idParentComment";
     public static final String PARAMETER_REFERER = "referer";
     public static final String PARAMETER_FROM_URL = "from_url";
     public static final String PARAMETER_AUTHORIZE_SUB_COMMENTS = "authorizeSubComments";
@@ -94,6 +97,7 @@ public final class CommentConstants
     public static final String MARK_MYLUTECE_USER = "myLuteceUser";
     public static final String MARK_LIST_IDS_MAILING_LIST = "listIdsMailingList";
     public static final String MARK_COMMENT = "comment";
+    public static final String MARK_ID_PARENT_COMMENT = "idParentComment";
     public static final String MARK_RESOURCE_EXTENDER = "resourceExtender";
     public static final String MARK_RESOURCE_EXTENDER_MAP = "resourceExtenderMap";
     public static final String MARK_RESOURCE_EXTENDER_NAME = "resourceExtenderName";

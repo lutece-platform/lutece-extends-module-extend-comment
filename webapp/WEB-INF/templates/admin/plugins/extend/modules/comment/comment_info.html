@@ -236,6 +236,11 @@
 								</a>
 								
 							</#if>
+							<#if comment.isAdminComment>
+								<a class="btn btn-xs btn-warning" href="jsp/admin/plugins/extend/modules/comment/GetModifyAdminComment.jsp?idExtendableResource=${idExtendableResource}&extendableResourceType=${extendableResourceType}&idComment=${comment.idComment!}<#if from_url?? && from_url?has_content && from_url != "null">&from_url=${from_url}</#if>" title="#i18n{portal.util.labelModify}">
+									<i class="fa fa-pencil"></i>
+								</a>
+							</#if>
 						</div>
 					</form>
 				</td>
