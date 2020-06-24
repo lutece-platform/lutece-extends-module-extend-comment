@@ -39,12 +39,13 @@ import fr.paris.lutece.util.sql.DAOUtil;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Date;
 
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
+
+import java.sql.Statement;
 
 
 /**
@@ -131,7 +132,7 @@ public class CommentDAO implements ICommentDAO
     public synchronized void insert( Comment comment, Plugin plugin )
     {
         int nNewPrimaryKey = newPrimaryKey( plugin );
-        DAOUtil daoUtil = new DAOUtil( SQL_QUERY_INSERT, plugin );
+        DAOUtil daoUtil = new DAOUtil( SQL_QUERY_INSERT, Statement.RETURN_GENERATED_KEYS, plugin );
 
         comment.setIdComment( nNewPrimaryKey );
 

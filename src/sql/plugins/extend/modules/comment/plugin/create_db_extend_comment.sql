@@ -3,7 +3,7 @@
 --
 DROP TABLE IF EXISTS extend_comment;
 CREATE TABLE extend_comment (
-	id_comment INT DEFAULT 0 NOT NULL,
+	id_comment INT NOT NULL AUTO_INCREMENT,
 	id_resource VARCHAR(100) DEFAULT '' NOT NULL,
 	resource_type VARCHAR(255) DEFAULT '' NOT NULL,
 	name VARCHAR(255) DEFAULT '' NOT NULL,
