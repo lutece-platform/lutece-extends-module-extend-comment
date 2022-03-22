@@ -2,7 +2,7 @@
 <@div class='d-flex justify-content-between is-flex is-justify-content-space-between pb-3 mb-2 pt-2 border-bottom border-info'>
 	<@tform type='inline' class='d-flex justify-content-around is-flex is-justify-content-space-around' action='jsp/admin/plugins/extend/ViewExtenderInfo.jsp'>
 		<@input type='hidden' name='idExtendableResource' value='${idExtendableResource}' />
-		<@input type='hidden' name='extendableResourceType' value='${extendableResourceType}' />
+		<@input type='hidden' name='extendableResourceType' value='${extendableResourceType!}' />
 		<@input type='hidden' name='extenderType' value='comment' />
 		<#if from_url?? && from_url?has_content && from_url != "null"><@input type='hidden' name='from_url' value='${from_url}' /></#if>
 		<@select name='filterPinned' default_value="${filterPinned!''}" class='form-control form-select-sm' items=listPinnedFilter />
@@ -18,7 +18,7 @@
 		</@select>
 		<@button type='submit' color='primary' style=' ' title='#i18n{module.extend.comment.comment_info.labelSearch}' hideTitle=['xs'] buttonIcon='filter' />
 	</@tform>
-	<#assign resHref>jsp/admin/plugins/extend/modules/comment/GetCreateComment.jsp?idExtendableResource=${idExtendableResource}&extendableResourceType=${extendableResourceType}<#if from_url?? && from_url?has_content && from_url != "null">&from_url=${from_url}</#if>" title="#i18n{module.extend.comment.comment.labelAddComment}</#assign>
+	<#assign resHref>jsp/admin/plugins/extend/modules/comment/GetCreateComment.jsp?idExtendableResource=${idExtendableResource}&extendableResourceType=${extendableResourceType!}<#if from_url?? && from_url?has_content && from_url != "null">&from_url=${from_url}</#if>" title="#i18n{module.extend.comment.comment.labelAddComment}</#assign>
 	<@aButton href=resHref title='' >
 		<@icon style='plus me-1 mr-1' /> #i18n{module.extend.comment.comment.labelAddComment}
 	</@aButton>
@@ -59,7 +59,7 @@
 						<@button color='success btn-sm' type='submit' name='publish' value='#i18n{module.extend.comment.comment_info.buttonUnpublish}" title="#i18n{module.extend.comment.comment_info.buttonPublish}' hideTitle=['xs'] buttonIcon='toggle-on' />
 					</#if>
 					<#if allowSubComments>
-						<#assign subComHref>jsp/admin/plugins/extend/modules/comment/GetCreateComment.jsp?idExtendableResource=${idExtendableResource}&extendableResourceType=${extendableResourceType}&idComment=${comment.idComment}<#if from_url?? && from_url?has_content && from_url != "null">&from_url=${from_url}</#if></#assign>
+						<#assign subComHref>jsp/admin/plugins/extend/modules/comment/GetCreateComment.jsp?idExtendableResource=${idExtendableResource}&extendableResourceType=${extendableResourceType!}&idComment=${comment.idComment}<#if from_url?? && from_url?has_content && from_url != "null">&from_url=${from_url}</#if></#assign>
 						<@aButton href=subComHref title=''>
 							<@icon style='comment' /> #i18n{module.extend.comment.comment_info.labelAnswer}
 						</@aButton>
@@ -69,23 +69,23 @@
 						<@icon style='trash' /> #i18n{portal.util.labelDelete}
 					</@aButton>
 					<#if comment.isImportant>
-						<#assign subImpThumb>jsp/admin/plugins/extend/modules/comment/DoCancelFlagAsImportant.jsp?idExtendableResource=${idExtendableResource}&extendableResourceType=${extendableResourceType}&idComment=${comment.idComment}<#if from_url?? && from_url?has_content && from_url != "null">&from_url=${from_url}</#if></#assign> 
+						<#assign subImpThumb>jsp/admin/plugins/extend/modules/comment/DoCancelFlagAsImportant.jsp?idExtendableResource=${idExtendableResource}&extendableResourceType=${extendableResourceType!}&idComment=${comment.idComment}<#if from_url?? && from_url?has_content && from_url != "null">&from_url=${from_url}</#if></#assign> 
 						<@aButton color='danger' href=subImpThumb title=''>
 							<@icon style='thumbs-down' /> #i18n{module.extend.comment.comment_info.labelCancelFlagImportant}
 						</@aButton>
 					<#else>
-						<#assign subImpThumb>jsp/admin/plugins/extend/modules/comment/DoFlagAsImportant.jsp?idExtendableResource=${idExtendableResource}&extendableResourceType=${extendableResourceType}&idComment=${comment.idComment}<#if from_url?? && from_url?has_content && from_url != "null">&from_url=${from_url}</#if></#assign> 
+						<#assign subImpThumb>jsp/admin/plugins/extend/modules/comment/DoFlagAsImportant.jsp?idExtendableResource=${idExtendableResource}&extendableResourceType=${extendableResourceType!}&idComment=${comment.idComment}<#if from_url?? && from_url?has_content && from_url != "null">&from_url=${from_url}</#if></#assign> 
 						<@aButton href=subImpThumb title=''>
 							<@icon style='thumbs-up' /> #i18n{module.extend.comment.comment_info.labelDoFlagImportant}
 						</@aButton>
 					</#if>
 					<#if comment.pinned>
-						<#assign subPinHref>jsp/admin/plugins/extend/modules/comment/DoCancelPinned.jsp?idExtendableResource=${idExtendableResource}&extendableResourceType=${extendableResourceType}&idComment=${comment.idComment}<#if from_url?? && from_url?has_content && from_url != "null">&from_url=${from_url}</#if></#assign> 
+						<#assign subPinHref>jsp/admin/plugins/extend/modules/comment/DoCancelPinned.jsp?idExtendableResource=${idExtendableResource}&extendableResourceType=${extendableResourceType!}&idComment=${comment.idComment}<#if from_url?? && from_url?has_content && from_url != "null">&from_url=${from_url}</#if></#assign> 
 						<@aButton color='danger' href=subPinHref title=''>
 							<@icon style='thumbtack' /> #i18n{module.extend.comment.comment_info.labelCancelPinned}
 						</@aButton>
 					<#else>
-						<#assign subPinHref>jsp/admin/plugins/extend/modules/comment/DoPinned.jsp?idExtendableResource=${idExtendableResource}&extendableResourceType=${extendableResourceType}&idComment=${comment.idComment}<#if from_url?? && from_url?has_content && from_url != "null">&from_url=${from_url}</#if></#assign>
+						<#assign subPinHref>jsp/admin/plugins/extend/modules/comment/DoPinned.jsp?idExtendableResource=${idExtendableResource}&extendableResourceType=${extendableResourceType!}&idComment=${comment.idComment}<#if from_url?? && from_url?has_content && from_url != "null">&from_url=${from_url}</#if></#assign>
 						<@aButton href=subPinHref title=''>
 							<@icon style='thumbtack' /> #i18n{module.extend.comment.comment_info.labelDoPinned}
 						</@aButton>
@@ -151,7 +151,7 @@
 							</@btnGroup>
 							<#assign unpublishedSubComment = subComment.firstUnpublishedSubComment >
 							<#if 0 < unpublishedSubComment >
-								<a class="btn btn-warning btn-sm" onclick="javascript:$('#comment_toggle_${subComment.idComment!}').next().show();" href="${postBackUrl!}<#if postBackUrl?contains('?')>&amp;<#else>?</#if>extenderType=comment&idExtendableResource=${idExtendableResource}&extendableResourceType=${extendableResourceType}&idComment=${subComment.idComment}<#if from_url?? && from_url?has_content && from_url != "null">&from_url=${from_url}</#if>#subcomment_${unpublishedSubComment}">
+								<a class="btn btn-warning btn-sm" onclick="javascript:$('#comment_toggle_${subComment.idComment!}').next().show();" href="${postBackUrl!}<#if postBackUrl?contains('?')>&amp;<#else>?</#if>extenderType=comment&idExtendableResource=${idExtendableResource}&extendableResourceType=${extendableResourceType!}&idComment=${subComment.idComment}<#if from_url?? && from_url?has_content && from_url != "null">&from_url=${from_url}</#if>#subcomment_${unpublishedSubComment}">
 									#i18n{module.extend.comment.comment_info.unpublishedSubComments}
 								</a>
 							</#if>
