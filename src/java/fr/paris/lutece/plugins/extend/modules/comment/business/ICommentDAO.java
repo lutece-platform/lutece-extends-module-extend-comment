@@ -237,4 +237,20 @@ public interface ICommentDAO
     List<Integer> findIdMostCommentedResources( String strExtendableResourceType, boolean bPublishedOnly, int nItemsOffset, int nMaxItemsNumber,
             Plugin plugin );
 
+    /**
+     * Get comments of a lutece user. Only parents comments are returned.
+     * 
+     * @param strLuteceUserName
+     *            The name of the lutece user
+     * @param nItemsOffset
+     *            The offset of the items to get, or 0 to get items from the first one
+     * @param nMaxItemsNumber
+     *            The maximum number of items to return, or 0 to get every items
+     * @param plugin
+     *            The plugin
+     * @return The list of comments associated with the given resource
+     */
+	List<Comment> findCommentsByLuteceUserName(String strLuteceUserName, int nItemsOffset, int nMaxItemsNumber,
+			Plugin plugin);
+
 }

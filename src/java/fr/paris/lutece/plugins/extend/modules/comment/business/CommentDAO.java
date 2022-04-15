@@ -61,6 +61,7 @@ public class CommentDAO implements ICommentDAO
     private static final String SQL_QUERY_SELECT_ALL = " SELECT id_comment, id_resource, resource_type, date_comment, name, email, ip_address, comment, is_published, date_last_modif, id_parent_comment, is_admin_comment, lutece_user_name,is_pinned,comment_order,is_important FROM extend_comment ";
     private static final String SQL_QUERY_SELECT = SQL_QUERY_SELECT_ALL + " WHERE id_comment = ? ";
     private static final String SQL_QUERY_SELECT_BY_RESOURCE = SQL_QUERY_SELECT_ALL + " WHERE id_resource LIKE ? AND resource_type = ? ";
+    private static final String SQL_QUERY_SELECT_BY_LUTECE_USER_NAME = SQL_QUERY_SELECT_ALL + " WHERE lutece_user_name = ? ";
     private static final String SQL_QUERY_SELECT_ID_BY_RESOURCE = "SELECT id_comment FROM extend_comment WHERE id_resource = ? AND resource_type = ? ";
     private static final String SQL_QUERY_SELECT_NB_COMMENT_BY_RESOURCE = " SELECT count(id_comment) FROM extend_comment WHERE  resource_type = ? ";
     private static final String SQL_QUERY_DELETE = " DELETE FROM extend_comment WHERE id_comment = ? ";
@@ -715,5 +716,62 @@ public class CommentDAO implements ICommentDAO
         }
         sbSQL.append( strSortOrder );
 
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public List<Comment> findCommentsByLuteceUserName( String strLuteceUserName, int nItemsOffset, int nMaxItemsNumber, Plugin plugin )
+    {
+        List<Comment> listComments;
+        if ( nMaxItemsNumber > 0 )
+        {
+            listComments = new ArrayList<Comment>( nMaxItemsNumber );
+        }
+        else
+        {
+            listComments = new ArrayList<Comment>( );
+        }
+        StringBuilder sbSQL = new StringBuilder( SQL_QUERY_SELECT_BY_LUTECE_USER_NAME );
+        // We sort results
+        //addSqlOrderByCommentFilter( commentFilter, sbSQL );
+
+        // We paginate results
+        if ( nMaxItemsNumber > 0 )
+        {
+            sbSQL.append( SQL_LIMIT );
+            if ( nItemsOffset > 0 )
+            {
+                sbSQL.append( CONSTANT_QUESTION_MARK ).append( CONSTANT_COMMA );
+            }
+            sbSQL.append( CONSTANT_QUESTION_MARK );
+        }
+
+        // We now proceed the SQL request
+        int nIndex = 1;
+        DAOUtil daoUtil = new DAOUtil( sbSQL.toString( ), plugin );
+        daoUtil.setString( nIndex++, strLuteceUserName );
+
+        if ( nMaxItemsNumber > 0 )
+        {
+            if ( nItemsOffset > 0 )
+            {
+                daoUtil.setInt( nIndex++, nItemsOffset );
+            }
+            daoUtil.setInt( nIndex++, nMaxItemsNumber );
+        }
+
+        daoUtil.executeQuery( );
+
+        // We fetch results
+        while ( daoUtil.next( ) )
+        {
+            listComments.add( getCommentInfo( daoUtil ) );
+        }
+
+        daoUtil.free( );
+
+        return listComments;
     }
 }

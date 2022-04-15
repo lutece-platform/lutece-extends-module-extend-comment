@@ -372,5 +372,18 @@ public interface ICommentService
      * @return
      */
     String getResourceType( String extendableResourceType );
+    
+    /**
+     * Load comments by lutece user name.
+     * 
+     * @param strLuteceUserName
+     *            the name of the lutece user
+     * @param nItemsOffset
+     *            The offset of the items to get, or 0 to get items from the first one
+     * @param nMaxItemsNumber
+     *            The maximum number of items to return, or 0 to get every items
+     * @return the list of comments by lutece user name
+     */
+    List<Comment> findCommentsByLuteceUser( String strLuteceUserName, int nItemsOffset, int nMaxItemsNumber );
 
 }
