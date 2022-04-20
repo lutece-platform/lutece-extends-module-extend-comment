@@ -58,7 +58,6 @@ import fr.paris.lutece.plugins.extend.service.extender.ResourceExtenderService;
 import fr.paris.lutece.plugins.extend.service.extender.config.IResourceExtenderConfigService;
 import fr.paris.lutece.portal.service.i18n.I18nService;
 import fr.paris.lutece.portal.service.plugin.Plugin;
-import fr.paris.lutece.portal.service.spring.SpringContextService;
 import fr.paris.lutece.portal.service.workflow.WorkflowService;
 import fr.paris.lutece.util.ReferenceList;
 
@@ -530,5 +529,11 @@ public class CommentService implements ICommentService
 
         return resourceType.toString( );
     }
+
+	@Override
+	public List<Comment> findByListResource(List<String> listIdExtendableResource, String strExtendableResourceType) {
+		
+		return _commentDAO.selectByListResource(listIdExtendableResource, strExtendableResourceType, CommentPlugin.getPlugin( ) );
+	}
 
 }

@@ -33,9 +33,16 @@
  */
 package fr.paris.lutece.plugins.extend.modules.comment.service;
 
+import java.util.Arrays;
+
+import fr.paris.lutece.plugins.extend.modules.comment.business.Comment;
+import fr.paris.lutece.plugins.extend.modules.comment.service.extender.CommentResourceExtender;
+import fr.paris.lutece.plugins.extend.service.extender.facade.ExtenderType;
+import fr.paris.lutece.plugins.extend.service.extender.facade.ResourceExtenderServiceFacade;
 import fr.paris.lutece.portal.service.plugin.Plugin;
 import fr.paris.lutece.portal.service.plugin.PluginDefaultImplementation;
 import fr.paris.lutece.portal.service.plugin.PluginService;
+import fr.paris.lutece.portal.service.spring.SpringContextService;
 
 /**
  *
@@ -58,5 +65,22 @@ public class CommentPlugin extends PluginDefaultImplementation
     public static Plugin getPlugin( )
     {
         return PluginService.getPlugin( PLUGIN_NAME );
+    }
+    @Override
+    public void init( )
+    {
+        super.init( );
+        ICommentService commentService= SpringContextService.getBean( CommentService.BEAN_SERVICE );
+      //  _commentService.findByListResource(listIdExtendableResource, strExtendableResourceType)
+		//Addition of rating for the exploitation of rating information from the extend plugin
+        ResourceExtenderServiceFacade.addExtenderType(
+        		new ExtenderType< >(
+        			Comment.class,
+        			CommentResourceExtender.EXTENDER_TYPE_COMMENT,
+        			(strIdExtendableResource,strExtendableResourceType)-> commentService.findByListResource(Arrays.asList(strIdExtendableResource), strExtendableResourceType),
+        			commentService::findByListResource,
+        			(strIdExtendableResource,strExtendableResourceType) -> String.valueOf( commentService.getCommentNb(  strIdExtendableResource,  strExtendableResourceType, true, true )),
+        			(strIdExtendableResource,strExtendableResourceType)-> String.valueOf( commentService.getCommentNb(  strIdExtendableResource,  strExtendableResourceType, true, true )) )
+        );
     }
 }

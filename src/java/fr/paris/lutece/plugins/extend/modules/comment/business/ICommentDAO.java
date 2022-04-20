@@ -146,6 +146,17 @@ public interface ICommentDAO
      */
     List<Comment> selectLastComments( String strIdExtendableResource, String strExtendableResourceType, int nNbComments, boolean bPublishedOnly,
             boolean bParentsOnly, Plugin plugin, boolean bSortedByDateCreation );
+    /**
+     * Load comment list by resource
+     * @param strIdExtendableResource
+     *            the id of the extendable resource
+     * @param strExtendableResourceType
+     *            the extendable resource type
+     * @param plugin
+     *            the plugin
+     * @return list of comments
+     */
+    List<Comment> selectByListResource( List<String> listIdExtendableResource, String strExtendableResourceType, Plugin plugin );
 
     /**
      * Get comments of a given resource. Only parents comments are returned.

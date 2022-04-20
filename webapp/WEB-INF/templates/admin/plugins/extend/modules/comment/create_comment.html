@@ -1,21 +1,29 @@
 <#include "/admin/util/editor/editor.html" />
 <#assign actionUrl>jsp/admin/plugins/extend/modules/comment/DoCreateComment.jsp<#if idComment??>#comment_${idComment}</#if></#assign>
-<@tform action=actionUrl>
-	<@input type='hidden' name='idExtendableResource' value='${idExtendableResource}' />
-	<@input type='hidden' name='extendableResourceType' value='${extendableResourceType}' />
-	<@input type='hidden' name='viewAllResources' value='${allResources?c}' />
-	<#if from_url?? && from_url?has_content && from_url != "null"><@input type='hidden' name='from_url' value='${from_url!}' /></#if>
-	<@input type='hidden' name='idComment' value='${idComment!}' />
-	<@formGroup labelKey='#i18n{module.extend.comment.comment_info.labelName}' labelFor='name'>
-		<@input name='name' value='${name!}' />
-	</@formGroup>
-	<@formGroup labelKey='#i18n{module.extend.comment.add_comment.labelComment}' labelFor='comment'>
-		<@input name='comment' type='textarea' class='richtext' value='${name!}' />
-	</@formGroup>
-	<@formGroup>
-		<@button type='submit' name='validate' value='' title='#i18n{portal.util.labelValidate}' color='primary' buttonIcon='check' />
-		<@button name='validate' value='' title='#i18n{portal.util.labelCancel}' color='default' buttonIcon='check' params='  onClick="javascript:history.go(-1);"'/>
-	</@formGroup>
-</@tform>
+<@row>
+	<@columns>
+		<@box>
+			<@boxBody>
+				<@tform action=actionUrl>
+					<@input type='hidden' name='idExtendableResource' value='${idExtendableResource}' />
+					<@input type='hidden' name='extendableResourceType' value='${extendableResourceType}' />
+					<@input type='hidden' name='viewAllResources' value='${allResources?c}' />
+					<#if from_url?? && from_url?has_content && from_url != "null"><@input type='hidden' name='from_url' value='${from_url!}' /></#if>
+					<@input type='hidden' name='idComment' value='${idComment!}' />
+					<@formGroup labelKey='#i18n{module.extend.comment.comment_info.labelName}' labelFor='name'>
+						<@input name='name' value='${name!}'  placeHolder='${name!}' mandatory=true />
+					</@formGroup>
+					<@formGroup labelKey='#i18n{module.extend.comment.add_comment.labelComment}' labelFor='comment'>
+						<@input name='comment' type='textarea' class='richtext' value='' placeHolder='#i18n{module.extend.comment.add_comment.placeholderComment}' mandatory=true />
+					</@formGroup>
+					<@formGroup>
+						<@button type='submit' name='validate' value='' title='#i18n{portal.util.labelValidate}' color='primary' buttonIcon='check' />
+						<@button name='validate' value='' title='#i18n{portal.util.labelCancel}' color='default' buttonIcon='undo' params='  onClick="javascript:history.go(-1);"'/>
+					</@formGroup>
+				</@tform>
+			</@boxBody>
+		</@box>
+	</@columns>
+</@row>
 <@initEditor />
 <@extendScript />

@@ -41,6 +41,7 @@ import javax.validation.constraints.NotNull;
 
 import fr.paris.lutece.plugins.extend.modules.comment.service.CommentAvatarService;
 import fr.paris.lutece.plugins.extend.modules.comment.util.annotation.Email;
+import fr.paris.lutece.plugins.extend.service.extender.facade.IExtendableResourceResult;
 import fr.paris.lutece.plugins.workflowcore.business.action.Action;
 import fr.paris.lutece.portal.service.editor.EditorBbcodeService;
 import fr.paris.lutece.portal.service.util.AppLogService;
@@ -50,7 +51,7 @@ import fr.paris.lutece.portal.service.util.AppLogService;
  * Comment
  * 
  */
-public class Comment
+public class Comment implements IExtendableResourceResult
 {
     public static final int COMMENT_STATE_PUBLISHED = 1;
     public static final int COMMENT_STATE_UN_PUBLISHED = 0;
@@ -83,6 +84,7 @@ public class Comment
     /**
      * @return the strIdExtendableResource
      */
+    @Override
     public String getIdExtendableResource( )
     {
         return _strIdExtendableResource;
@@ -100,6 +102,7 @@ public class Comment
     /**
      * @return the extendableResourceType
      */
+    @Override
     public String getExtendableResourceType( )
     {
         return _strExtendableResourceType;

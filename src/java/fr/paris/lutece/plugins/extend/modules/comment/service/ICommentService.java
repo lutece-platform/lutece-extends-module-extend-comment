@@ -43,6 +43,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import fr.paris.lutece.plugins.extend.modules.comment.business.Comment;
 import fr.paris.lutece.plugins.extend.modules.comment.business.CommentFilter;
+import fr.paris.lutece.portal.service.plugin.Plugin;
 import fr.paris.lutece.util.ReferenceList;
 
 /**
@@ -325,6 +326,16 @@ public interface ICommentService
      * @return The list of ids of resources ordered by the number of associated comments
      */
     List<Integer> findIdMostCommentedResources( String strExtendableResourceType, boolean bPublishedOnly, int nItemsOffset, int nMaxItemsNumber );
+
+    /**
+     * Find comment list by resource
+     * @param strIdExtendableResource
+     *            the id of the extendable resource
+     * @param strExtendableResourceType
+     *            the extendable resource type
+     * @return list of comments
+     */
+    List<Comment> findByListResource( List<String> listIdExtendableResource, String strExtendableResourceType );
 
     /**
      * return a referenceList of comment states
