@@ -287,13 +287,14 @@ public class CommentResourceExtenderComponent extends AbstractResourceExtenderCo
     {
         if ( resourceExtender != null )
         {
+            CommentExtenderConfig config = _configService.find( getResourceExtender( ).getKey( ), resourceExtender.getIdExtendableResource( ),
+                    resourceExtender.getExtendableResourceType( ) );
+            if ( config != null )
+            {
 
             // We save in session the post back URL
             String strPostBackUrl = getPostBackUrl( request );
             request.getSession( ).setAttribute( CommentPlugin.PLUGIN_NAME + CommentConstants.SESSION_COMMENT_ADMIN_POST_BACK_URL, strPostBackUrl );
-
-            CommentExtenderConfig config = _configService.find( getResourceExtender( ).getKey( ), resourceExtender.getIdExtendableResource( ),
-                    resourceExtender.getExtendableResourceType( ) );
 
             // We get the pagination info from the session
             Integer nItemsPerPage = _nDefaultItemsPerPage;
@@ -491,6 +492,7 @@ public class CommentResourceExtenderComponent extends AbstractResourceExtenderCo
             }
 
             return strContent;
+            }
         }
 
         return StringUtils.EMPTY;
