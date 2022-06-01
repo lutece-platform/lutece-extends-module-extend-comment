@@ -1,0 +1,12 @@
+<@row>
+	<@columns>
+		<fieldset>
+			<legend>#i18n{module.extend.comment.comment_task_form_workflow.page_title}</legend>
+			${tasks_form}
+			<@formGroup>
+				<@aButton title='#i18n{workflow.tasks_form_test_workflow.button_save}' class='btn btn-primary' href='jsp/admin/plugins/extend/modules/comment/DoSaveTaskForm.jsp?id_action=${id_action}&amp;idComment=${idComment}'/>					
+				<@button type='submit' name='back' value='back' buttonIcon='times' title='#i18n{workflow.tasks_form_test_workflow.button_cancel}' color='btn-default' />
+			</@formGroup>
+		</fieldset>
+	</@columns>
+ </@row>

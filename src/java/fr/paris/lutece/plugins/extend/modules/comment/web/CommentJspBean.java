@@ -39,8 +39,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.inject.Inject;
-import javax.inject.Named;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang3.StringUtils;
@@ -64,6 +62,7 @@ import fr.paris.lutece.portal.service.message.AdminMessage;
 import fr.paris.lutece.portal.service.message.AdminMessageService;
 import fr.paris.lutece.portal.service.spring.SpringContextService;
 import fr.paris.lutece.portal.service.template.AppTemplateService;
+import fr.paris.lutece.portal.service.util.AppException;
 import fr.paris.lutece.portal.service.util.AppLogService;
 import fr.paris.lutece.portal.service.util.AppPathService;
 import fr.paris.lutece.portal.service.workflow.WorkflowService;
@@ -88,14 +87,19 @@ public class CommentJspBean extends PluginAdminPageJspBean
     // JSP
     private static final String JSP_VIEW_EXTENDER_INFO = "../../ViewExtenderInfo.jsp";
     private static final String JSP_URL_DO_REMOVE_COMMENT = "jsp/admin/plugins/extend/modules/comment/DoRemoveComment.jsp";
-
+    private static final String JSP_VIEW_TASKS_FORM = "../comment/GetTasksFormWorkflow.jsp";
+    
     // MESSAGES
     private static final String MESSAGE_MANDATORY_FIELD = "portal.util.message.mandatoryField";
     private static final String MESSAGE_TITLE_CREATE_COMMENT = "module.extend.comment.create_comment.pageTitle";
 
     // TEMPLATE
     private static final String TEMPLATE_CREATE_COMMENT = "admin/plugins/extend/modules/comment/create_comment.html";
-
+    private static final String TEMPLATE_TASKS_FORM_WORKFLOW  = "admin/plugins/extend/modules/comment/tasks_form_workflow.html";
+    
+    // MARKS
+    private static final String MARK_TASK_FORM = "tasks_form";
+    
     // CONSTANT
     private static final String CONSTANT_SPACE = " ";
 
@@ -134,26 +138,7 @@ public class CommentJspBean extends PluginAdminPageJspBean
                     return AdminMessageService.getMessageUrl( request, CommentConstants.MESSAGE_ERROR_GENERIC_MESSAGE, AdminMessage.TYPE_ERROR );
                 }
 
-                String strPostBackUrl = (String) request.getSession( )
-                        .getAttribute( CommentPlugin.PLUGIN_NAME + CommentConstants.SESSION_COMMENT_ADMIN_POST_BACK_URL );
-                request.getSession( ).setAttribute( CommentPlugin.PLUGIN_NAME + CommentConstants.SESSION_COMMENT_ADMIN_POST_BACK_URL, null );
-                if ( StringUtils.isEmpty( strPostBackUrl ) )
-                {
-                    strPostBackUrl = JSP_VIEW_EXTENDER_INFO;
-                }
-                UrlItem url = new UrlItem( strPostBackUrl );
-                url.addParameter( CommentConstants.PARAMETER_EXTENDER_TYPE, CommentResourceExtender.EXTENDER_TYPE_COMMENT );
-                addIdExtendableResourceInUrl( comment.getIdExtendableResource( ), request, url );
-
-                url.addParameter( CommentConstants.PARAMETER_EXTENDABLE_RESOURCE_TYPE, comment.getExtendableResourceType( ) );
-                if ( comment.getIdParentComment( ) > 0 )
-                {
-                    url.addParameter( CommentConstants.PARAMETER_ID_COMMENT, comment.getIdParentComment( ) );
-                }
-                url.addParameter( CommentConstants.PARAMETER_FROM_URL, StringUtils.replace( request.getParameter( CommentConstants.PARAMETER_FROM_URL ),
-                        CommentConstants.CONSTANT_AND, CommentConstants.CONSTANT_AND_HTML ) );
-
-                return url.getUrl( );
+                return getPostBackUrl( request, comment );
             }
         }
 
@@ -193,26 +178,7 @@ public class CommentJspBean extends PluginAdminPageJspBean
                     return AdminMessageService.getMessageUrl( request, CommentConstants.MESSAGE_ERROR_GENERIC_MESSAGE, AdminMessage.TYPE_ERROR );
                 }
 
-                String strPostBackUrl = (String) request.getSession( )
-                        .getAttribute( CommentPlugin.PLUGIN_NAME + CommentConstants.SESSION_COMMENT_ADMIN_POST_BACK_URL );
-                request.getSession( ).setAttribute( CommentPlugin.PLUGIN_NAME + CommentConstants.SESSION_COMMENT_ADMIN_POST_BACK_URL, null );
-                if ( StringUtils.isEmpty( strPostBackUrl ) )
-                {
-                    strPostBackUrl = JSP_VIEW_EXTENDER_INFO;
-                }
-                UrlItem url = new UrlItem( strPostBackUrl );
-                url.addParameter( CommentConstants.PARAMETER_EXTENDER_TYPE, CommentResourceExtender.EXTENDER_TYPE_COMMENT );
-                addIdExtendableResourceInUrl( comment.getIdExtendableResource( ), request, url );
-
-                url.addParameter( CommentConstants.PARAMETER_EXTENDABLE_RESOURCE_TYPE, comment.getExtendableResourceType( ) );
-                if ( comment.getIdParentComment( ) > 0 )
-                {
-                    url.addParameter( CommentConstants.PARAMETER_ID_COMMENT, comment.getIdParentComment( ) );
-                }
-                url.addParameter( CommentConstants.PARAMETER_FROM_URL, StringUtils.replace( request.getParameter( CommentConstants.PARAMETER_FROM_URL ),
-                        CommentConstants.CONSTANT_AND, CommentConstants.CONSTANT_AND_HTML ) );
-
-                return url.getUrl( );
+                return getPostBackUrl( request, comment );
             }
         }
 
@@ -251,26 +217,7 @@ public class CommentJspBean extends PluginAdminPageJspBean
                     return AdminMessageService.getMessageUrl( request, CommentConstants.MESSAGE_ERROR_GENERIC_MESSAGE, AdminMessage.TYPE_ERROR );
                 }
 
-                String strPostBackUrl = (String) request.getSession( )
-                        .getAttribute( CommentPlugin.PLUGIN_NAME + CommentConstants.SESSION_COMMENT_ADMIN_POST_BACK_URL );
-                request.getSession( ).setAttribute( CommentPlugin.PLUGIN_NAME + CommentConstants.SESSION_COMMENT_ADMIN_POST_BACK_URL, null );
-                if ( StringUtils.isEmpty( strPostBackUrl ) )
-                {
-                    strPostBackUrl = JSP_VIEW_EXTENDER_INFO;
-                }
-                UrlItem url = new UrlItem( strPostBackUrl );
-                url.addParameter( CommentConstants.PARAMETER_EXTENDER_TYPE, CommentResourceExtender.EXTENDER_TYPE_COMMENT );
-                addIdExtendableResourceInUrl( comment.getIdExtendableResource( ), request, url );
-
-                url.addParameter( CommentConstants.PARAMETER_EXTENDABLE_RESOURCE_TYPE, comment.getExtendableResourceType( ) );
-                if ( comment.getIdParentComment( ) > 0 )
-                {
-                    url.addParameter( CommentConstants.PARAMETER_ID_COMMENT, comment.getIdParentComment( ) );
-                }
-                url.addParameter( CommentConstants.PARAMETER_FROM_URL, StringUtils.replace( request.getParameter( CommentConstants.PARAMETER_FROM_URL ),
-                        CommentConstants.CONSTANT_AND, CommentConstants.CONSTANT_AND_HTML ) );
-
-                return url.getUrl( );
+                return getPostBackUrl( request, comment );
             }
         }
 
@@ -325,25 +272,7 @@ public class CommentJspBean extends PluginAdminPageJspBean
                     return AdminMessageService.getMessageUrl( request, CommentConstants.MESSAGE_ERROR_GENERIC_MESSAGE, AdminMessage.TYPE_ERROR );
                 }
 
-                String strPostBackUrl = (String) request.getSession( )
-                        .getAttribute( CommentPlugin.PLUGIN_NAME + CommentConstants.SESSION_COMMENT_ADMIN_POST_BACK_URL );
-                request.getSession( ).setAttribute( CommentPlugin.PLUGIN_NAME + CommentConstants.SESSION_COMMENT_ADMIN_POST_BACK_URL, null );
-                if ( StringUtils.isEmpty( strPostBackUrl ) )
-                {
-                    strPostBackUrl = JSP_VIEW_EXTENDER_INFO;
-                }
-                UrlItem url = new UrlItem( strPostBackUrl );
-                url.addParameter( CommentConstants.PARAMETER_EXTENDER_TYPE, CommentResourceExtender.EXTENDER_TYPE_COMMENT );
-                addIdExtendableResourceInUrl( comment.getIdExtendableResource( ), request, url );
-                url.addParameter( CommentConstants.PARAMETER_EXTENDABLE_RESOURCE_TYPE, comment.getExtendableResourceType( ) );
-                if ( comment.getIdParentComment( ) > 0 )
-                {
-                    url.addParameter( CommentConstants.PARAMETER_ID_COMMENT, comment.getIdParentComment( ) );
-                }
-                url.addParameter( CommentConstants.PARAMETER_FROM_URL, StringUtils.replace( request.getParameter( CommentConstants.PARAMETER_FROM_URL ),
-                        CommentConstants.CONSTANT_AND, CommentConstants.CONSTANT_AND_HTML ) );
-
-                return url.getUrl( );
+                return getPostBackUrl( request, comment );
             }
         }
 
@@ -496,65 +425,167 @@ public class CommentJspBean extends PluginAdminPageJspBean
         String strIdAction = request.getParameter( CommentConstants.PARAMETER_ID_ACTION );
         String strIdComment = request.getParameter( CommentConstants.PARAMETER_ID_COMMENT );
 
-        if ( StringUtils.isNotEmpty( strIdAction ) && StringUtils.isNumeric( strIdAction ) && StringUtils.isNotEmpty( strIdComment )
-                && StringUtils.isNumeric( strIdComment ) )
+        if ( StringUtils.isNumeric( strIdAction ) && StringUtils.isNumeric( strIdComment ) )
         {
             int nIdAction = Integer.parseInt( strIdAction );
             int nIdComment = Integer.parseInt( strIdComment );
+            
             Comment comment = _commentService.findByPrimaryKey( nIdComment );
-            ResourceExtenderDTOFilter filter = new ResourceExtenderDTOFilter( );
-            filter.setFilterExtendableResourceType( comment.getExtendableResourceType( ) );
-            filter.setFilterIdExtendableResource( comment.getIdExtendableResource( ) );
-            filter.setFilterExtenderType( CommentResourceExtender.EXTENDER_TYPE_COMMENT );
-            filter.setIncludeWildcardResource( true );
-
-            List<ResourceExtenderDTO> listResourceExtender = _resourceExtenderService.findByFilter( filter );
-            int nIdExtendable = listResourceExtender.get( 0 ).getIdExtender( );
             String resourceType = _commentService.getResourceType( comment.getExtendableResourceType( ) );
+           
+            int nIdExtendable = getIdExtender( comment );
+                        
             try
             {
                 if ( WorkflowService.getInstance( ).isDisplayTasksForm( nIdAction, getLocale( ) ) )
-                {
-                    String strError = WorkflowService.getInstance( ).doSaveTasksForm( nIdComment, resourceType, nIdAction, nIdExtendable, request,
-                            getLocale( ) );
-                    if ( strError != null )
-                    {
-                        AppLogService.error( strError );
+                {                   
+                    UrlItem url = new UrlItem( JSP_VIEW_TASKS_FORM );
+                   
+                    url.addParameter( CommentConstants.PARAMETER_ID_ACTION, strIdAction ); 
+                    url.addParameter( CommentConstants.PARAMETER_ID_COMMENT, strIdComment );
 
-                        return AdminMessageService.getMessageUrl( request, CommentConstants.MESSAGE_ERROR_GENERIC_MESSAGE, AdminMessage.TYPE_ERROR );
-                    }
+                    return url.getUrl( );
                 }
                 else
                 {
-
-                    WorkflowService.getInstance( ).doProcessAction( nIdComment, resourceType, nIdAction, nIdExtendable, request, getLocale( ), false );
+                    WorkflowService.getInstance( ).doProcessAction( nIdComment, resourceType, nIdAction, nIdExtendable, request, getLocale( ), false, getUser( ) );
                 }
             }
             catch( Exception e )
             {
-                AppLogService.error( "Error Workflow", e );
+                AppLogService.error( "Error processing action for record {} ", nIdComment, e.getMessage( ), e );
             }
-            String strPostBackUrl = (String) request.getSession( )
-                    .getAttribute( CommentPlugin.PLUGIN_NAME + CommentConstants.SESSION_COMMENT_ADMIN_POST_BACK_URL );
-            request.getSession( ).setAttribute( CommentPlugin.PLUGIN_NAME + CommentConstants.SESSION_COMMENT_ADMIN_POST_BACK_URL, null );
-            if ( StringUtils.isEmpty( strPostBackUrl ) )
-            {
-                strPostBackUrl = JSP_VIEW_EXTENDER_INFO;
-            }
-            UrlItem url = new UrlItem( strPostBackUrl );
-            url.addParameter( CommentConstants.PARAMETER_EXTENDER_TYPE, CommentResourceExtender.EXTENDER_TYPE_COMMENT );
-            addIdExtendableResourceInUrl( comment.getIdExtendableResource( ), request, url );
-
-            url.addParameter( CommentConstants.PARAMETER_EXTENDABLE_RESOURCE_TYPE, comment.getExtendableResourceType( ) );
-            if ( comment.getIdParentComment( ) > 0 )
-            {
-                url.addParameter( CommentConstants.PARAMETER_ID_COMMENT, comment.getIdParentComment( ) );
-            }
-            url.addParameter( CommentConstants.PARAMETER_FROM_URL, StringUtils.replace( request.getParameter( CommentConstants.PARAMETER_FROM_URL ),
-                    CommentConstants.CONSTANT_AND, CommentConstants.CONSTANT_AND_HTML ) );
-
-            return url.getUrl( );
+            
+            return getPostBackUrl( request, comment );
         }
         return AdminMessageService.getMessageUrl( request, CommentConstants.MESSAGE_ERROR_GENERIC_MESSAGE, AdminMessage.TYPE_ERROR );
+    }
+    
+    /**
+     * Get tasks form workflow
+     * @param request
+     * @return
+     */
+    public String getTasksFormWorkflow( HttpServletRequest request )
+    {
+        String strIdAction = request.getParameter( CommentConstants.PARAMETER_ID_ACTION );
+        String strIdComment = request.getParameter( CommentConstants.PARAMETER_ID_COMMENT );
+        
+        Map<String, Object> model = new HashMap<>( );
+        
+        if ( StringUtils.isNumeric( strIdAction ) && StringUtils.isNumeric( strIdComment ) )
+        {
+            int nIdAction = Integer.parseInt( strIdAction );
+            int nIdComment = Integer.parseInt( strIdComment );
+            
+            Comment comment = _commentService.findByPrimaryKey( nIdComment );  
+            String resourceType = _commentService.getResourceType( comment.getExtendableResourceType( ) );   
+            String strHtmlTasksForm = WorkflowService.getInstance( ).getDisplayTasksForm( nIdComment, resourceType, nIdAction, request, getLocale( ),
+                    getUser( ) );
+            
+            model.put( CommentConstants.PARAMETER_ID_ACTION, strIdAction );
+            model.put( CommentConstants.PARAMETER_ID_COMMENT, strIdComment );
+            model.put( MARK_TASK_FORM, strHtmlTasksForm );
+        }
+        
+        HtmlTemplate template = AppTemplateService.getTemplate( TEMPLATE_TASKS_FORM_WORKFLOW, AdminUserService.getLocale( request ), model );
+        
+        return getAdminPage( template.getHtml( ) );
+    }
+    
+    /**
+     * Do save task form
+     * @param request
+     * @return The next URL to redirect to
+     */
+    public String doSaveTaskForm( HttpServletRequest request )
+    {
+        String strIdAction = request.getParameter( CommentConstants.PARAMETER_ID_ACTION );
+        String strIdComment = request.getParameter( CommentConstants.PARAMETER_ID_COMMENT );
+        
+        if ( StringUtils.isNumeric( strIdAction ) && StringUtils.isNumeric( strIdComment ) )
+        {
+            int nIdAction = Integer.parseInt( strIdAction );
+            int nIdComment = Integer.parseInt( strIdComment );
+        
+            Comment comment = _commentService.findByPrimaryKey( nIdComment );
+            String resourceType = _commentService.getResourceType( comment.getExtendableResourceType( ) );
+        
+            int nIdExtendable = getIdExtender( comment );
+            
+            try
+            {
+                String strError = WorkflowService.getInstance( ).doSaveTasksForm( comment.getIdComment( ) , resourceType, nIdAction, nIdExtendable,
+                        request, getLocale( ), getUser( ) );
+                
+                if( strError != null )
+                {
+                    return AdminMessageService.getMessageUrl( request, CommentConstants.MESSAGE_ERROR_GENERIC_MESSAGE, AdminMessage.TYPE_ERROR );
+                }
+                else 
+                {
+                    WorkflowService.getInstance( ).doProcessAction( comment.getIdComment( ), resourceType, nIdAction, nIdExtendable, request, getLocale( ),
+                            false, getUser( ) );
+                }
+            }
+            catch ( AppException e )
+            {
+                AppLogService.error( "Error processing action for record {}", nIdComment, e );
+            }
+        
+            return getPostBackUrl( request, comment );
+        }
+        return getAdminPage( JSP_VIEW_EXTENDER_INFO );
+    }
+
+    /**
+     * Get id extender
+     * @param comment
+     * @return id extender
+     */
+    private int getIdExtender( Comment comment )
+    {
+        ResourceExtenderDTOFilter filter = new ResourceExtenderDTOFilter( );
+        filter.setFilterExtendableResourceType( comment.getExtendableResourceType( ) );
+        filter.setFilterIdExtendableResource( comment.getIdExtendableResource( ) );
+        filter.setFilterExtenderType( CommentResourceExtender.EXTENDER_TYPE_COMMENT );
+        filter.setIncludeWildcardResource( true );
+        
+        List<ResourceExtenderDTO> listResourceExtender = _resourceExtenderService.findByFilter( filter );        
+        return listResourceExtender.get( 0 ).getIdExtender( );
+    }
+    
+    /**
+     * get post back url
+     * @param request
+     * @param comment
+     * @return back url
+     */
+    private String getPostBackUrl( HttpServletRequest request, Comment comment )
+    {
+        String strPostBackUrl = (String) request.getSession( )
+                .getAttribute( CommentPlugin.PLUGIN_NAME + CommentConstants.SESSION_COMMENT_ADMIN_POST_BACK_URL );
+        
+        request.getSession( ).setAttribute( CommentPlugin.PLUGIN_NAME + CommentConstants.SESSION_COMMENT_ADMIN_POST_BACK_URL, null );
+        
+        if ( StringUtils.isEmpty( strPostBackUrl ) )
+        {
+            strPostBackUrl = JSP_VIEW_EXTENDER_INFO;
+        }
+        
+        UrlItem url = new UrlItem( strPostBackUrl );
+        url.addParameter( CommentConstants.PARAMETER_EXTENDER_TYPE, CommentResourceExtender.EXTENDER_TYPE_COMMENT );
+        addIdExtendableResourceInUrl( comment.getIdExtendableResource( ), request, url );
+
+        url.addParameter( CommentConstants.PARAMETER_EXTENDABLE_RESOURCE_TYPE, comment.getExtendableResourceType( ) );
+        if ( comment.getIdParentComment( ) > 0 )
+        {
+            url.addParameter( CommentConstants.PARAMETER_ID_COMMENT, comment.getIdParentComment( ) );
+        }
+        
+        url.addParameter( CommentConstants.PARAMETER_FROM_URL, StringUtils.replace( request.getParameter( CommentConstants.PARAMETER_FROM_URL ),
+                CommentConstants.CONSTANT_AND, CommentConstants.CONSTANT_AND_HTML ) );
+
+        return url.getUrl( );
     }
 }
