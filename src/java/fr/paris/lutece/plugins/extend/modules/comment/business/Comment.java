@@ -33,17 +33,21 @@
  */
 package fr.paris.lutece.plugins.extend.modules.comment.business;
 
+import java.security.GeneralSecurityException;
 import java.sql.Timestamp;
 import java.util.Collection;
 import java.util.List;
 
 import javax.validation.constraints.NotNull;
 
+import org.apache.commons.lang3.StringUtils;
+
 import fr.paris.lutece.plugins.extend.modules.comment.service.CommentAvatarService;
 import fr.paris.lutece.plugins.extend.modules.comment.util.annotation.Email;
 import fr.paris.lutece.plugins.extend.service.extender.facade.IExtendableResourceResult;
 import fr.paris.lutece.plugins.workflowcore.business.action.Action;
 import fr.paris.lutece.portal.service.editor.EditorBbcodeService;
+import fr.paris.lutece.portal.service.security.RsaService;
 import fr.paris.lutece.portal.service.util.AppLogService;
 
 /**
@@ -530,6 +534,23 @@ public class Comment implements IExtendableResourceResult
     public void setListWorkflowActions( Collection<Action> listWorkflowActions )
     {
         _listWorkflowActions = listWorkflowActions;
+    }
+    
+    /**
+     * Get encrypted lutece user name
+     * @return encrypt lutece user name
+     */
+    public String getEncryptedLuteceUserName( )
+    {
+        try
+        {
+            return RsaService.encryptRsa( this._strLuteceUserName );
+        }
+        catch ( GeneralSecurityException e )
+        {
+            AppLogService.error( "Error when encrypt lutece user name for comment {}", this._nIdComment, e );
+        }
+        return StringUtils.EMPTY;
     }
 
 }
