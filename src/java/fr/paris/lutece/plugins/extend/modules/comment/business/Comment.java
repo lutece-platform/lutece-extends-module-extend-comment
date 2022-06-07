@@ -542,13 +542,16 @@ public class Comment implements IExtendableResourceResult
      */
     public String getEncryptedLuteceUserName( )
     {
-        try
+        if( !StringUtils.isEmpty( this._strLuteceUserName ) )
         {
-            return RsaService.encryptRsa( this._strLuteceUserName );
-        }
-        catch ( GeneralSecurityException e )
-        {
-            AppLogService.error( "Error when encrypt lutece user name for comment {}", this._nIdComment, e );
+            try
+            {
+                return RsaService.encryptRsa( this._strLuteceUserName );
+            }
+            catch ( GeneralSecurityException e )
+            {
+                AppLogService.error( "Error when encrypt lutece user name for comment {}", this._nIdComment, e );
+            }
         }
         return StringUtils.EMPTY;
     }
