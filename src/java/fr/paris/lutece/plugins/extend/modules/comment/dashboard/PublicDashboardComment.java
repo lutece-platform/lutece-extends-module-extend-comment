@@ -43,10 +43,7 @@ import fr.paris.lutece.plugins.extend.modules.comment.service.ICommentService;
 import fr.paris.lutece.portal.service.dashboard.IPublicDashboardComponent;
 import fr.paris.lutece.portal.service.i18n.I18nService;
 import fr.paris.lutece.portal.service.spring.SpringContextService;
-import fr.paris.lutece.portal.service.template.AppTemplateService;
-import fr.paris.lutece.util.html.HtmlTemplate;
 
-// TODO: Auto-generated Javadoc
 /**
  * The Class MyPublicProjectCounterProfile.
  */
@@ -55,18 +52,8 @@ public class PublicDashboardComment implements IPublicDashboardComponent
 
 	public static final String DASHBOARD_PROPERTIES_TITLE = "module.extend.comment.publicdashboard.bean.title";
 	private String strIdComponent = "extend-comment.PublicDashboardComment";
-	private static final String TEMPLATE_MANAGE_FORMS = "/skin/plugins/publicdashboard/view_comments.html";
-	private static final String MARK_DASHBOARD_COMMENTS = "dashboardcomments";
-	
-	@Override
-	public String getDashboardData( String user_id, Map<String,String> additionalParameters ) {
-
-		Map<String, Object> model = new HashMap<String, Object>( );
-		model.put( MARK_DASHBOARD_COMMENTS, searchCommentUser( user_id ) );
-        HtmlTemplate template = AppTemplateService.getTemplate( TEMPLATE_MANAGE_FORMS, I18nService.getDefaultLocale( ), model );
-
-        return template.getHtml( );
-	}
+	private static final String TEMPLATE_DASHBOARD_COMMENTS = "/skin/plugins/extend/modules/comment/publicdashboard_comments.html";
+	private static final String MARK_DASHBOARD_COMMENTS = "comments_publidashboard";
 
 	@Override
 	public String getComponentDescription( ) {
@@ -77,7 +64,22 @@ public class PublicDashboardComment implements IPublicDashboardComponent
 	public String getComponentId( ) {
 		return strIdComponent;
 	}
+	
+	@Override
+	public String getDashboardTemplate( )
+	{
+		return TEMPLATE_DASHBOARD_COMMENTS;
+	}
+	
+	@Override
+	public Map<String, Object> getDashboardModel( String user_id, Map<String,String[]> additionalParameters )
+	{
+		Map<String, Object> model = new HashMap<String, Object>( );
+		model.put( MARK_DASHBOARD_COMMENTS, searchCommentUser( user_id ) );
+		return model;
+	}
 
+	
     /**
      * Search project counter.
      *
@@ -93,5 +95,7 @@ public class PublicDashboardComment implements IPublicDashboardComponent
 
         return lstComment;
     }
+
+	
 
 }

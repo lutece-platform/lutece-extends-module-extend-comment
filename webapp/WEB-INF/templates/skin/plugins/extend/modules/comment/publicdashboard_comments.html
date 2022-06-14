@@ -1,0 +1,15 @@
+
+		<h2>#i18n{module.extend.comment.publicdashboard.title}</h2>
+		<div class="table-responsive">
+			<table class="table table-striped">
+
+				<tbody>
+					<#list comments_publidashboard as comment>
+						<tr>
+							<td>${comment.dateComment}</td>
+							<td>${comment.comment}</td>
+						</tr>
+					</#list>
+				</tbody>
+			</table>
+		</div>
