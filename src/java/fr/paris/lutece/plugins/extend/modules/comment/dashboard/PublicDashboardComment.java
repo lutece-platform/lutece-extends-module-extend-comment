@@ -35,6 +35,7 @@ package fr.paris.lutece.plugins.extend.modules.comment.dashboard;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import fr.paris.lutece.plugins.extend.modules.comment.business.Comment;
@@ -45,7 +46,7 @@ import fr.paris.lutece.portal.service.i18n.I18nService;
 import fr.paris.lutece.portal.service.spring.SpringContextService;
 
 /**
- * The Class MyPublicProjectCounterProfile.
+ * The Class PublicDashboardComment.
  */
 public class PublicDashboardComment implements IPublicDashboardComponent
 {
@@ -56,8 +57,8 @@ public class PublicDashboardComment implements IPublicDashboardComponent
 	private static final String MARK_DASHBOARD_COMMENTS = "comments_publidashboard";
 
 	@Override
-	public String getComponentDescription( ) {
-		return I18nService.getLocalizedString( DASHBOARD_PROPERTIES_TITLE, I18nService.getDefaultLocale( ) );
+	public String getComponentDescription( Locale locale ) {
+		return I18nService.getLocalizedString( DASHBOARD_PROPERTIES_TITLE, locale );
 	}
 
 	@Override
@@ -83,7 +84,7 @@ public class PublicDashboardComment implements IPublicDashboardComponent
     /**
      * Search project counter.
      *
-     * @param guid the guid
+     * @param user_id the user_id
      * @return the list
      */
     private static List<Comment> searchCommentUser( String user_id )
@@ -91,7 +92,7 @@ public class PublicDashboardComment implements IPublicDashboardComponent
 
         ICommentService commService = SpringContextService.getBean( CommentService.BEAN_SERVICE );
 
-        List<Comment> lstComment = commService.findCommentsByLuteceUser( user_id, 0, 0 );
+        List<Comment> lstComment = commService.findCommentsByLuteceUser( user_id );
 
         return lstComment;
     }

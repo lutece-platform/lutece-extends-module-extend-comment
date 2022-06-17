@@ -250,7 +250,6 @@ public interface ICommentDAO
      *            The plugin
      * @return The list of comments associated with the given resource
      */
-	List<Comment> findCommentsByLuteceUserName(String strLuteceUserName, int nItemsOffset, int nMaxItemsNumber,
-			Plugin plugin);
+	List<Comment> findCommentsByLuteceUserName(String strLuteceUserName, Plugin plugin);
 
 }

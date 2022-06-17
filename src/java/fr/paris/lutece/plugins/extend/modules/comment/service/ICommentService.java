@@ -384,6 +384,6 @@ public interface ICommentService
      *            The maximum number of items to return, or 0 to get every items
      * @return the list of comments by lutece user name
      */
-    List<Comment> findCommentsByLuteceUser( String strLuteceUserName, int nItemsOffset, int nMaxItemsNumber );
+    List<Comment> findCommentsByLuteceUser( String strLuteceUserName );
 
 }

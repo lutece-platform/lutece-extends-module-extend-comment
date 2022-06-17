@@ -722,45 +722,16 @@ public class CommentDAO implements ICommentDAO
      * {@inheritDoc}
      */
     @Override
-    public List<Comment> findCommentsByLuteceUserName( String strLuteceUserName, int nItemsOffset, int nMaxItemsNumber, Plugin plugin )
+    public List<Comment> findCommentsByLuteceUserName( String strLuteceUserName, Plugin plugin )
     {
-        List<Comment> listComments;
-        if ( nMaxItemsNumber > 0 )
-        {
-            listComments = new ArrayList<Comment>( nMaxItemsNumber );
-        }
-        else
-        {
-            listComments = new ArrayList<Comment>( );
-        }
+        List<Comment> listComments = new ArrayList<Comment>( );
         StringBuilder sbSQL = new StringBuilder( SQL_QUERY_SELECT_BY_LUTECE_USER_NAME );
-        // We sort results
-        //addSqlOrderByCommentFilter( commentFilter, sbSQL );
 
-        // We paginate results
-        if ( nMaxItemsNumber > 0 )
-        {
-            sbSQL.append( SQL_LIMIT );
-            if ( nItemsOffset > 0 )
-            {
-                sbSQL.append( CONSTANT_QUESTION_MARK ).append( CONSTANT_COMMA );
-            }
-            sbSQL.append( CONSTANT_QUESTION_MARK );
-        }
 
         // We now proceed the SQL request
         int nIndex = 1;
         DAOUtil daoUtil = new DAOUtil( sbSQL.toString( ), plugin );
         daoUtil.setString( nIndex++, strLuteceUserName );
-
-        if ( nMaxItemsNumber > 0 )
-        {
-            if ( nItemsOffset > 0 )
-            {
-                daoUtil.setInt( nIndex++, nItemsOffset );
-            }
-            daoUtil.setInt( nIndex++, nMaxItemsNumber );
-        }
 
         daoUtil.executeQuery( );
 

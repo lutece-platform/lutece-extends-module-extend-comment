@@ -537,8 +537,8 @@ public class CommentService implements ICommentService
 	}
 
 	@Override
-	public List<Comment> findCommentsByLuteceUser(String strLuteceUserName, int nItemsOffset, int nMaxItemsNumber) {
-		return _commentDAO.findCommentsByLuteceUserName(strLuteceUserName, nItemsOffset, nMaxItemsNumber, CommentPlugin.getPlugin( ));
+	public List<Comment> findCommentsByLuteceUser(String strLuteceUserName) {
+		return _commentDAO.findCommentsByLuteceUserName(strLuteceUserName, CommentPlugin.getPlugin( ));
 	}
 
 }
