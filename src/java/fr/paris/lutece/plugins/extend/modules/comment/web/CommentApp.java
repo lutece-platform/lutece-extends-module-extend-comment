@@ -510,6 +510,7 @@ public class CommentApp implements XPageApplication
             {
                 throw new UserNotSignedException( );
             }
+            comment.setName( user.getFirstName( ) + " " + user.getLastName( ) );
         }
 
         // Check mandatory fields
