@@ -1,13 +1,13 @@
 <#include "/admin/util/editor/editor.html" />
 <h2>#i18n{module.extend.comment.comment_config.pageTitle}</h2>
 <@row>
-	<@columns sm=3>
+	<@columns md=6 lg=4 xl=3>
 		<@formGroup rows=2 labelKey='#i18n{module.extend.comment.comment_config.labelModerated}' >
 			<@radioButton name='moderated' id='modOk' value='true' labelKey='#i18n{portal.util.labelYes}' labelFor='modOk' orientation='' checked=commentConfig.moderated /> 
 			<@radioButton name='moderated' id='modNOk' value='false' labelKey='#i18n{portal.util.labelNo}' labelFor='modNOk' orientation='' checked=!commentConfig.moderated /> 
 		</@formGroup>
 		<@formGroup rows=2 labelKey='#i18n{module.extend.comment.comment_config.labelNbComments}' labelFor='nbComments' >
-			<@input type='number' name='nbComments' class='w-25' value='${commentConfig.nbComments!}' maxlength=2 min=1  />
+			<@input type='number' name='nbComments' value='${commentConfig.nbComments!}' maxlength=2 min=1  />
 		</@formGroup>
 		<@formGroup rows=2 labelKey='#i18n{module.extend.comment.comment_config.labelAuthorizeSubComments}' >
 			<@radioButton name='authorizeSubComments' id='authorizeSubCommentsOk' value='true' labelKey='#i18n{portal.util.labelYes}' labelFor='authorizeSubCommentsOk' orientation='' checked=commentConfig.authorizeSubComments /> 
@@ -26,7 +26,7 @@
 			<@radioButton name='deleteComments' id='extend-comment-delete-comments-disabled' value='true' labelKey='#i18n{portal.util.labelNo}' labelFor='extend-comment-delete-comments-disabled' orientation='' checked=!commentConfig.deleteComments /> 
 		</@formGroup>
 	</@columns>
-	<@columns sm=3>
+	<@columns md=6 lg=4 xl=3>
 		<@formGroup rows=2 labelKey='#i18n{module.extend.comment.comment_config.labelEnabledAuthMode}' labelFor='enabledAuthMode' >
 			<@radioButton name='enabledAuthMode' id='extend-comment-auth-mode-enabled' value='true' labelKey='#i18n{portal.util.labelYes}' labelFor='extend-comment-auth-mode-enabled' orientation='' checked=commentConfig.enabledAuthMode /> 
 			<@radioButton name='enabledAuthMode' id='extend-comment-auth-mode-disabled' value='false' labelKey='#i18n{portal.util.labelNo}' labelFor='extend-comment-auth-mode-disabled' orientation='' checked=!commentConfig.enabledAuthMode /> 
@@ -47,7 +47,7 @@
 			</@select>
 		</@formGroup>
 	</@columns>
-	<@columns sm=5 offsetSm=1>
+	<@columns lg=4 xl=6>
 		<@formGroup rows=2 labelKey='#i18n{module.extend.comment.comment_config.labelAdminComment}' labelFor='adminBadge' >
 			<@input type='textarea' name='adminBadge' class='richtext' >${commentConfig.adminBadge!}</@input>	
 		</@formGroup>
