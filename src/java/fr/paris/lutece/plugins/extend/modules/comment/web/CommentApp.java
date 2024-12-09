@@ -100,6 +100,7 @@ import fr.paris.lutece.util.html.IPaginator;
 import fr.paris.lutece.util.html.Paginator;
 import fr.paris.lutece.util.http.SecurityUtil;
 import fr.paris.lutece.util.url.UrlItem;
+import java.net.MalformedURLException;
 
 /**
  * 
@@ -874,7 +875,16 @@ public class CommentApp implements XPageApplication
                 HttpServletResponse response = LocalVariables.getResponse( );
                 try
                 {
-                    response.sendRedirect( strFromUrl );
+                    // Open redirect control (set baseUrl in lutece properties in case of ReverseProxy)
+                    if ( strFromUrl.startsWith( AppPathService.getBaseUrl( request ) ) )
+                    {
+                        response.sendRedirect( strFromUrl );
+                    }
+                    else
+                    {
+                        AppLogService.error( "WARNING : Incorrect base URL", new MalformedURLException() );
+                    }
+                    
                 }
                 catch( IOException e )
                 {
