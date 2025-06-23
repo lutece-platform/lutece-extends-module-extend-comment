@@ -42,13 +42,16 @@ import fr.paris.lutece.plugins.extend.service.extender.facade.ResourceExtenderSe
 import fr.paris.lutece.portal.service.plugin.Plugin;
 import fr.paris.lutece.portal.service.plugin.PluginDefaultImplementation;
 import fr.paris.lutece.portal.service.plugin.PluginService;
-import fr.paris.lutece.portal.service.spring.SpringContextService;
+
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.inject.spi.CDI;
 
 /**
  *
  * CommentPlugin
  *
  */
+@ApplicationScoped
 public class CommentPlugin extends PluginDefaultImplementation
 {
     /** The Constant PLUGIN_NAME. */
@@ -56,6 +59,8 @@ public class CommentPlugin extends PluginDefaultImplementation
 
     /** The Constant TRANSACTION_MANAGER. */
     public static final String TRANSACTION_MANAGER = PLUGIN_NAME + ".transactionManager";
+
+    private ICommentService commentService = CDI.current().select(ICommentService.class).get();
 
     /**
      * Gets the plugin.
@@ -70,9 +75,7 @@ public class CommentPlugin extends PluginDefaultImplementation
     public void init( )
     {
         super.init( );
-        ICommentService commentService= SpringContextService.getBean( CommentService.BEAN_SERVICE );
-      //  _commentService.findByListResource(listIdExtendableResource, strExtendableResourceType)
-		//Addition of rating for the exploitation of rating information from the extend plugin
+        //Addition of rating for the exploitation of rating information from the extend plugin
         ResourceExtenderServiceFacade.addExtenderType(
         		new ExtenderType< >(
         			Comment.class,

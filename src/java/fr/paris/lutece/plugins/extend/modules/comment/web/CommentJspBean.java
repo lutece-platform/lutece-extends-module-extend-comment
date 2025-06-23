@@ -39,7 +39,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -60,7 +60,6 @@ import fr.paris.lutece.portal.business.user.AdminUser;
 import fr.paris.lutece.portal.service.admin.AdminUserService;
 import fr.paris.lutece.portal.service.message.AdminMessage;
 import fr.paris.lutece.portal.service.message.AdminMessageService;
-import fr.paris.lutece.portal.service.spring.SpringContextService;
 import fr.paris.lutece.portal.service.template.AppTemplateService;
 import fr.paris.lutece.portal.service.util.AppException;
 import fr.paris.lutece.portal.service.util.AppLogService;
@@ -72,11 +71,19 @@ import fr.paris.lutece.util.html.HtmlTemplate;
 import fr.paris.lutece.util.http.SecurityUtil;
 import fr.paris.lutece.util.url.UrlItem;
 
+import jakarta.inject.Inject;
+import jakarta.enterprise.context.SessionScoped;
+import jakarta.inject.Named;
+
+import jakarta.enterprise.inject.spi.CDI;
+
 /**
  * 
  * CommentJspBean
  * 
  */
+@SessionScoped
+@Named
 public class CommentJspBean extends PluginAdminPageJspBean
 {
     /**
@@ -103,11 +110,13 @@ public class CommentJspBean extends PluginAdminPageJspBean
     // CONSTANT
     private static final String CONSTANT_SPACE = " ";
 
-    private ICommentService _commentService = SpringContextService.getBean( CommentService.BEAN_SERVICE );
-    private IResourceExtenderHistoryService _resourceHistoryService = SpringContextService.getBean( ResourceExtenderHistoryService.BEAN_SERVICE );
+    private ICommentService _commentService = CDI.current().select( ICommentService.class ).get();
 
-    private IResourceExtenderService _resourceExtenderService = SpringContextService.getBean( ResourceExtenderService.BEAN_SERVICE );
+    private IResourceExtenderHistoryService _resourceHistoryService = CDI.current().select( IResourceExtenderHistoryService.class ).get();
 
+    private IResourceExtenderService _resourceExtenderService = CDI.current().select( IResourceExtenderService.class ).get();
+
+    
     /**
      * Do publish unpublish comment.
      * 
@@ -167,7 +176,6 @@ public class CommentJspBean extends PluginAdminPageJspBean
             {
                 try
                 {
-
                     _commentService.updateFlagImportant( comment.getIdComment( ), !cancelFlag );
                 }
                 catch( Exception ex )

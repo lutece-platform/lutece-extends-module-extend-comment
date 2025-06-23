@@ -98,6 +98,7 @@
 						<button class="btn btn-primary btn-sm" type="submit" name="add" value="#i18n{portal.util.labelValidate}" title="#i18n{portal.util.labelValidate}" >
 							<i class="glyphicon glyphicon-ok">&nbsp;</i>&nbsp;#i18n{portal.util.labelValidate}
 						</button>
+						<input type="hidden" name="_csrftoken" value="${_csrftoken!}" />
 						<#if addCommentPosition = 0>
 						<button class="btn btn-sm" type="button" name="cancel" onclick="javascript:history.back();" value="#i18n{portal.util.labelBack}" title="#i18n{portal.util.labelBack}" >
 							#i18n{portal.util.labelBack}

@@ -36,8 +36,8 @@ package fr.paris.lutece.plugins.extend.modules.comment.service;
 import java.util.List;
 import java.util.Set;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.validation.ConstraintViolation;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.ConstraintViolation;
 
 import fr.paris.lutece.plugins.extend.modules.comment.business.Comment;
 import fr.paris.lutece.portal.service.security.LuteceUser;

@@ -37,9 +37,9 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
-import org.springframework.transaction.annotation.Transactional;
+import jakarta.transaction.Transactional;
 
 import fr.paris.lutece.plugins.extend.modules.comment.business.Comment;
 import fr.paris.lutece.plugins.extend.modules.comment.business.CommentFilter;
@@ -57,7 +57,7 @@ public interface ICommentService
      * @param nIdComment
      *            the n id comment
      */
-    @Transactional( CommentPlugin.TRANSACTION_MANAGER )
+    @Transactional
     void remove( int nIdComment );
 
     /**
@@ -68,7 +68,7 @@ public interface ICommentService
      * @param strExtendableResourceType
      *            the str extendable resource type
      */
-    @Transactional( CommentPlugin.TRANSACTION_MANAGER )
+    @Transactional
     void removeByResource( String strIdExtendableResource, String strExtendableResourceType );
 
     /**
@@ -77,7 +77,7 @@ public interface ICommentService
      * @param comment
      *            the comment
      */
-    @Transactional( CommentPlugin.TRANSACTION_MANAGER )
+    @Transactional
     void create( Comment comment );
 
     /**
@@ -88,7 +88,7 @@ public interface ICommentService
      * @param request
      *            the HTTP request
      */
-    @Transactional( CommentPlugin.TRANSACTION_MANAGER )
+    @Transactional
     void create( Comment comment, HttpServletRequest request );
 
     /**
@@ -97,7 +97,7 @@ public interface ICommentService
      * @param comment
      *            the comment
      */
-    @Transactional( CommentPlugin.TRANSACTION_MANAGER )
+    @Transactional
     void update( Comment comment );
 
     /**
@@ -108,7 +108,7 @@ public interface ICommentService
      * @param bPublished
      *            the b published
      */
-    @Transactional( CommentPlugin.TRANSACTION_MANAGER )
+    @Transactional
     void updateCommentStatus( int nIdComment, boolean bPublished );
 
     /**
@@ -119,7 +119,7 @@ public interface ICommentService
      * @param bImportant
      *            true if the comment is important
      */
-    @Transactional( CommentPlugin.TRANSACTION_MANAGER )
+    @Transactional
     void updateFlagImportant( int nIdComment, boolean bImportant );
 
     /**
@@ -130,7 +130,7 @@ public interface ICommentService
      * @param bPinned
      *            true if the comment must be pinned
      */
-    @Transactional( CommentPlugin.TRANSACTION_MANAGER )
+    @Transactional
     void updateCommentPinned( int nIdComment, boolean bPinned );
 
     /**

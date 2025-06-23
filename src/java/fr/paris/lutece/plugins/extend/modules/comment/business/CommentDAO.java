@@ -44,16 +44,19 @@ import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import jakarta.enterprise.context.ApplicationScoped;
+
 /**
  * This class provides Data Access methods for Comment objects.
  */
+@ApplicationScoped
 public class CommentDAO implements ICommentDAO
 {
 

@@ -47,16 +47,21 @@ import fr.paris.lutece.util.url.UrlItem;
 
 import java.util.Map;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.StringUtils;
+
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Named;
 
 /**
  * 
  * ManageCommentsPluginAction
  * 
  */
+@ApplicationScoped
+@Named( "extend-comment.manageCommentsAction" )
 public class ManageCommentsPluginAction extends AbstractPluginAction<IExtendableResource> implements IExtendableResourcePluginAction
 {
     private static final String ACTION_NAME = "Manage comments";

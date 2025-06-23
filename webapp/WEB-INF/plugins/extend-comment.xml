@@ -3,7 +3,7 @@
     <!-- Plugin Informations -->
     <name>extend-comment</name>
     <class>fr.paris.lutece.plugins.extend.modules.comment.service.CommentPlugin</class>
-    <version>1.2.2-SNAPSHOT</version>
+    <version>2.0.0-SNAPSHOT</version>
     <description>module.extend.comment.module.description</description>
     <provider>module.extend.comment.module.provider</provider>
     <documentation/>
@@ -12,9 +12,9 @@
     <user-guide/>
     <provider-url>http://lutece.paris.fr</provider-url>
     <icon-url>images/admin/skin/plugins/extend/modules/comment/extend-comment.png</icon-url>
-    <copyright>Copyright 2001-2012 Mairie de Paris</copyright>
+    <copyright>Copyright 2001-2025 Ville de Paris</copyright>
     <core-version-dependency>
-        <min-core-version>4.0.0</min-core-version>
+        <min-core-version>8.0.0</min-core-version>
         <max-core-version/>
     </core-version-dependency>
 
@@ -25,7 +25,6 @@
     <applications>
         <application>
             <application-id>extend-comment</application-id>
-            <application-class>fr.paris.lutece.plugins.extend.modules.comment.web.CommentApp</application-class>
         </application>
     </applications>
     

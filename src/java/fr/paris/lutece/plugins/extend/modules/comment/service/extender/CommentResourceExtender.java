@@ -40,18 +40,28 @@ import fr.paris.lutece.plugins.extend.modules.comment.service.ICommentService;
 import fr.paris.lutece.plugins.extend.modules.comment.util.constants.CommentConstants;
 import fr.paris.lutece.plugins.extend.service.extender.AbstractResourceExtender;
 import fr.paris.lutece.plugins.extend.service.extender.config.IResourceExtenderConfigService;
+import fr.paris.lutece.portal.service.i18n.I18nService;
+import fr.paris.lutece.plugins.extend.modules.comment.web.component.CommentResourceExtenderComponent;
 
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.annotation.PostConstruct;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
+
 
 import org.apache.commons.lang3.StringUtils;
+
+import java.util.Locale;
 
 /**
  *
  * CommentResourceExtender
  *
  */
+@ApplicationScoped
+@Named( "extend-comment.commentResourceExtender" )
 public class CommentResourceExtender extends AbstractResourceExtender
 {
     /** The Constant EXTENDER_TYPE_COMMENT. */
@@ -59,11 +69,36 @@ public class CommentResourceExtender extends AbstractResourceExtender
     private static final String EXTENDABLE_RESOURCE_TYPE_COMMENT = "comment";
 
     @Inject
-    @Named( CommentConstants.BEAN_CONFIG_SERVICE )
+    @Named( "extend-comment.commentExtenderConfigService" )
     private IResourceExtenderConfigService _configService;
+    
     @Inject
-    @Named( CommentService.BEAN_SERVICE )
+    @Named( "extend-comment.commentService" )
     private ICommentService _commentService;
+
+    @Inject
+    @ConfigProperty( name = "extend.comment.titleKey", defaultValue = "module.comment.rating.extender.rating.label" )
+    private String titleKey;
+
+    @Inject
+    private CommentResourceExtenderComponent resourceExtenderComponent;
+
+    CommentResourceExtender( )
+    {
+
+    }
+
+    @PostConstruct
+    public void producesCommentResourceExtender( )
+    {
+        setResourceExtenderComponent( resourceExtenderComponent );
+        setKey( EXTENDABLE_RESOURCE_TYPE_COMMENT );
+        setI18nTitleKey( I18nService.getLocalizedString( titleKey, Locale.getDefault( ) ) );
+        setConfigRequired( true );
+        setHistoryEnable( true );
+        setStateEnable( true );
+
+    }
 
     /**
      * {@inheritDoc}
