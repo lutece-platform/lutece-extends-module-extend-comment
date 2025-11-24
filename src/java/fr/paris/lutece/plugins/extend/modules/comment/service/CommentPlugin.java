@@ -60,8 +60,6 @@ public class CommentPlugin extends PluginDefaultImplementation
     /** The Constant TRANSACTION_MANAGER. */
     public static final String TRANSACTION_MANAGER = PLUGIN_NAME + ".transactionManager";
 
-    private ICommentService commentService = CDI.current().select(ICommentService.class).get();
-
     /**
      * Gets the plugin.
      *
@@ -71,19 +69,10 @@ public class CommentPlugin extends PluginDefaultImplementation
     {
         return PluginService.getPlugin( PLUGIN_NAME );
     }
+    
     @Override
     public void init( )
     {
-        super.init( );
-        //Addition of rating for the exploitation of rating information from the extend plugin
-        ResourceExtenderServiceFacade.addExtenderType(
-        		new ExtenderType< >(
-        			Comment.class,
-        			CommentResourceExtender.EXTENDER_TYPE_COMMENT,
-        			(strIdExtendableResource,strExtendableResourceType)-> commentService.findByListResource(Arrays.asList(strIdExtendableResource), strExtendableResourceType),
-        			commentService::findByListResource,
-        			(strIdExtendableResource,strExtendableResourceType) -> String.valueOf( commentService.getCommentNb(  strIdExtendableResource,  strExtendableResourceType, true, true )),
-        			(strIdExtendableResource,strExtendableResourceType)-> String.valueOf( commentService.getCommentNb(  strIdExtendableResource,  strExtendableResourceType, true, true )) )
-        );
+
     }
 }

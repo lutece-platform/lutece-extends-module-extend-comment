@@ -1,4 +1,5 @@
-<?xml version="1.0" encoding="UTF-8"?><plug-in>
+<?xml version="1.0" encoding="UTF-8"?>
+<plug-in>
 
     <!-- Plugin Informations -->
     <name>extend-comment</name>
@@ -10,7 +11,7 @@
     <installation/>
     <changes/>
     <user-guide/>
-    <provider-url>http://lutece.paris.fr</provider-url>
+    <provider-url>https://lutece.paris.fr</provider-url>
     <icon-url>images/admin/skin/plugins/extend/modules/comment/extend-comment.png</icon-url>
     <copyright>Copyright 2001-2025 Ville de Paris</copyright>
     <core-version-dependency>
