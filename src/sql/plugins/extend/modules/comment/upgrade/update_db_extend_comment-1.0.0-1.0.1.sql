@@ -1,3 +1,6 @@
+-- liquibase formatted sql
+-- changeset extend-comment:update_db_extend_comment-1.0.0-1.0.1.sql
+-- preconditions onFail:MARK_RAN onError:WARN
 --
 -- EXTENDCOMMENT-2 : Add the possibility to notify a mailing list when a comment is added.
 --
