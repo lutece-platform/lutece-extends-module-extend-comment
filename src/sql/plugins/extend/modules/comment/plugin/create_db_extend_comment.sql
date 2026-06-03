@@ -1,3 +1,6 @@
+-- liquibase formatted sql
+-- changeset extend-comment:create_db_extend_comment.sql
+-- preconditions onFail:MARK_RAN onError:WARN
 --
 -- Structure for table extend_comment
 --

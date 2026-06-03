@@ -1,3 +1,6 @@
+-- liquibase formatted sql
+-- changeset extend-comment:update_db_extend_comment-1.1.5-1.1.6.sql
+-- preconditions onFail:MARK_RAN onError:WARN
 --
 -- EXTENDCOMMENT- : Add authentication mod
 --
