@@ -81,6 +81,7 @@ import fr.paris.lutece.portal.service.plugin.PluginService;
 import fr.paris.lutece.portal.service.prefs.UserPreferencesService;
 import fr.paris.lutece.portal.service.security.LuteceUser;
 import fr.paris.lutece.portal.service.security.SecurityService;
+import fr.paris.lutece.portal.service.security.SecurityTokenService;
 import fr.paris.lutece.portal.service.security.UserNotSignedException;
 import fr.paris.lutece.portal.service.spring.SpringContextService;
 import fr.paris.lutece.portal.service.template.AppTemplateService;
@@ -194,6 +195,8 @@ public class CommentApp implements XPageApplication
                         requestParameters.put( CommentConstants.PARAMETER_ID_COMMENT, strIdComment );
                         requestParameters.put( CommentConstants.PARAMETER_CONFIRM_REMOVE_COMMENT, "1" );
                         requestParameters.put( CommentConstants.PARAMETER_FROM_URL, strFromUrl );
+                        requestParameters.put( SecurityTokenService.PARAMETER_TOKEN,
+                                SecurityTokenService.getInstance( ).getToken( request, getTokenKey( strIdComment ) ) );
                         SiteMessageService.setMessage( request, CommentConstants.MESSAGE_CONFIRM_REMOVE_COMMENT, SiteMessage.TYPE_CONFIRMATION, JSP_PORTAL,
                                 requestParameters );
                     }
@@ -684,6 +687,11 @@ public class CommentApp implements XPageApplication
         return sbError.toString( );
     }
 
+    private static String getTokenKey( String strIdComment )
+    {
+        return CommentConstants.ACTION_REMOVE_COMMENT + "_" + strIdComment;
+    }
+
     /**
      * Send comment notification.
      * 
@@ -816,6 +824,12 @@ public class CommentApp implements XPageApplication
     {
         String strConfirmRemoveComment = String.valueOf( request.getParameter( CommentConstants.PARAMETER_CONFIRM_REMOVE_COMMENT ) );
         String strIdComment = String.valueOf( request.getParameter( CommentConstants.PARAMETER_ID_COMMENT ) );
+
+        if ( !SecurityTokenService.getInstance( ).validate( request, getTokenKey( strIdComment ) ) )
+        {
+            SiteMessageService.setMessage( request, CommentConstants.MESSAGE_ERROR_CANNOT_DELETE, SiteMessage.TYPE_ERROR );
+        }
+
         int nIdComment = Integer.parseInt( strIdComment );
         Comment comment = getCommentService( ).findByPrimaryKey( nIdComment );
         LuteceUser user = null;
