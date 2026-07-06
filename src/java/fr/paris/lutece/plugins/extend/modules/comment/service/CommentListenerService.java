@@ -35,6 +35,8 @@ package fr.paris.lutece.plugins.extend.modules.comment.service;
 
 import fr.paris.lutece.plugins.extend.modules.comment.business.Comment;
 import fr.paris.lutece.plugins.extend.modules.comment.business.ICommentDAO;
+import fr.paris.lutece.portal.business.event.ResourceEvent;
+import fr.paris.lutece.portal.service.event.ResourceEventManager;
 import fr.paris.lutece.portal.service.security.LuteceUser;
 import fr.paris.lutece.portal.service.spring.SpringContextService;
 import fr.paris.lutece.portal.service.util.AppLogService;
@@ -207,6 +209,12 @@ public class CommentListenerService
                 listener.publishComment( strIdExtendableResource, bPublished );
             }
         }
+
+        // Propagate a modification event of the extended resource to the ResourceEventManager subscribers
+        ResourceEvent event = new ResourceEvent( );
+        event.setIdResource( strIdExtendableResource );
+        event.setTypeResource( strExtendableResourceType );
+        ResourceEventManager.fireUpdatedResource( event );
     }
 
     /**
