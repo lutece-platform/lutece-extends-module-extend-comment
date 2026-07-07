@@ -76,9 +76,10 @@ public class CommentDAO implements ICommentDAO
     private static final String SQL_ORDER_BY_DATE_MODIFICATION = " ORDER BY date_last_modif ";
     private static final String SQL_ORDER_BY_DATE_CREATION = " ORDER BY date_comment ";
     private static final String SQL_COUNT_NUMBER_COMMENTS_FOR_SELECT_ID_RESOURCE = " SELECT COUNT( id_resource ) FROM extend_comment ec WHERE e.id_resource = ec.id_resource AND e.resource_type = ec.resource_type ";
-    private static final String SQL_QUERY_SELECT_BY_LIST_RESOURCE = SQL_QUERY_SELECT_ALL + " WHERE  resource_type = ? AND id_resource IN ( ";
-
     private static final String SQL_FILTER_STATUS_PUBLISHED = " is_published = 1 ";
+    private static final String SQL_QUERY_SELECT_BY_LIST_RESOURCE = SQL_QUERY_SELECT_ALL + " WHERE " + SQL_FILTER_STATUS_PUBLISHED
+            + " AND resource_type = ? AND id_resource IN ( ";
+
     private static final String SQL_FILTER_STATUS_UN_PUBLISHED = " is_published = 0 ";
     private static final String SQL_FILTER_IS_IMPORTANT_TRUE = " is_important = 1 ";
     private static final String SQL_FILTER_IS_IMPORTANT_FALSE = " is_important = 0 ";
