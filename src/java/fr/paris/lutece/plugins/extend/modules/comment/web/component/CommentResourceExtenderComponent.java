@@ -57,6 +57,7 @@ import fr.paris.lutece.plugins.extend.modules.comment.service.CommentPlugin;
 import fr.paris.lutece.plugins.extend.modules.comment.service.ICommentService;
 import fr.paris.lutece.plugins.extend.modules.comment.service.extender.CommentResourceExtender;
 import fr.paris.lutece.plugins.extend.modules.comment.util.constants.CommentConstants;
+import fr.paris.lutece.plugins.extend.modules.comment.web.CommentApp;
 import fr.paris.lutece.plugins.extend.service.ExtendPlugin;
 import fr.paris.lutece.plugins.extend.service.content.ExtendableContentPostProcessor;
 import fr.paris.lutece.plugins.extend.service.extender.IResourceExtenderService;
@@ -75,6 +76,7 @@ import fr.paris.lutece.portal.service.prefs.UserPreferencesService;
 import fr.paris.lutece.portal.service.resource.IExtendableResource;
 import fr.paris.lutece.portal.service.security.LuteceUser;
 import fr.paris.lutece.portal.service.security.SecurityService;
+import fr.paris.lutece.portal.service.security.SecurityTokenService;
 import fr.paris.lutece.portal.service.spring.SpringContextService;
 import fr.paris.lutece.portal.service.template.AppTemplateService;
 import fr.paris.lutece.portal.service.util.AppPathService;
@@ -221,6 +223,10 @@ public class CommentResourceExtenderComponent extends AbstractResourceExtenderCo
             request.getSession( ).setAttribute( ExtendPlugin.PLUGIN_NAME + CommentConstants.PARAMETER_FROM_URL,
                     request.getRequestURI( ) + "?" + request.getQueryString( ) );
             model.put( CommentConstants.PARAMETER_FROM_URL, CommentConstants.FROM_SESSION );
+
+            // CSRF token to protect the doAddComment action (one token per extendable resource)
+            model.put( SecurityTokenService.MARK_TOKEN, SecurityTokenService.getInstance( )
+                    .getToken( request, CommentApp.getAddCommentTokenKey( strIdExtendableResource, strExtendableResourceType ) ) );
         }
 
         LuteceUser user = SecurityService.getInstance( ).getRegisteredUser( request );
