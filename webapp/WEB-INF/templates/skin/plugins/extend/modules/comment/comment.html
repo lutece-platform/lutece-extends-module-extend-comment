@@ -107,6 +107,7 @@
       <form class="form" method="post" action="jsp/site/Portal.jsp">
         <input type="hidden" name="page" value="extend-comment">
         <input type="hidden" name="action" value="doAddComment">
+        <input type="hidden" name="token" value="${token!}">
         <input type="hidden" name="idParentComment" value="${comment.idComment!}">
        
         <#if returnToCommentList?? && returnToCommentList>

@@ -190,7 +190,7 @@ public class CommentApp implements XPageApplication
                         requestParameters.put( CommentConstants.PARAMETER_CONFIRM_REMOVE_COMMENT, "1" );
                         requestParameters.put( CommentConstants.PARAMETER_FROM_URL, strFromUrl );
                         requestParameters.put( SecurityTokenService.PARAMETER_TOKEN,
-                                SecurityTokenService.getInstance( ).getToken( request, getTokenKey( strIdComment ) ) );
+                                SecurityTokenService.getInstance( ).getToken( request, getTokenKey( strIdExtendableResource, strExtendableResourceType ) ) );
                         SiteMessageService.setMessage( request, CommentConstants.MESSAGE_CONFIRM_REMOVE_COMMENT, SiteMessage.TYPE_CONFIRMATION, JSP_PORTAL,
                                 requestParameters );
                     }
@@ -424,6 +424,10 @@ public class CommentApp implements XPageApplication
             model.put( CommentConstants.MARK_WEBAPP_URL, AppPathService.getBaseUrl( request ) );
             model.put( CommentConstants.MARK_LOCALE, Locale.getDefault( ) );
 
+            // CSRF token to protect the doAddComment action (one token per extendable resource)
+            model.put( SecurityTokenService.MARK_TOKEN,
+                    SecurityTokenService.getInstance( ).getToken( request, getAddCommentTokenKey( strIdExtendableResource, strExtendableResourceType ) ) );
+
             // Add Captcha
             model.put( MARK_IS_ACTIVE_CAPTCHA, _bIsCaptchaEnabled );
 
@@ -470,6 +474,11 @@ public class CommentApp implements XPageApplication
     private XPage doAddComment( HttpServletRequest request, String strIdExtendableResource, String strExtendableResourceType )
             throws SiteMessageException, UserNotSignedException
     {
+        // CSRF protection : reject forged requests (missing or invalid security token)
+        if ( !SecurityTokenService.getInstance( ).validate( request, getAddCommentTokenKey( strIdExtendableResource, strExtendableResourceType ) ) )
+        {
+            SiteMessageService.setMessage( request, CommentConstants.MESSAGE_ERROR_GENERIC_MESSAGE, SiteMessage.TYPE_STOP );
+        }
 
         Comment comment = new Comment( );
         LuteceUser user = null;
@@ -660,11 +669,21 @@ public class CommentApp implements XPageApplication
         url.setAnchor( CommentConstants.ADD_COMMENT_MESSAGE_RESULT_ANCHOR );
         try
         {
-            response.sendRedirect( url.getUrl( ) );
+            String strRedirectUrl = url.getUrl( );
+            // Open redirect control : only redirect to internal (safe) URLs
+            if ( SecurityUtil.isInternalRedirectUrlSafe( strRedirectUrl, request ) )
+            {
+                response.sendRedirect( strRedirectUrl );
+            }
+            else
+            {
+                AppLogService.error( "module-extend-comment : open redirect blocked to {}", strRedirectUrl );
+                response.sendRedirect( AppPathService.getBaseUrl( request ) );
+            }
         }
         catch( IOException e )
         {
-            // log ?
+            AppLogService.error( e.getMessage( ), e );
         }
         return new XPage( );
     }
@@ -694,9 +713,24 @@ public class CommentApp implements XPageApplication
         return sbError.toString( );
     }
 
-    private static String getTokenKey( String strIdComment )
+    private static String getTokenKey( String strIdExtendableResource, String strExtendableResourceType )
     {
-        return CommentConstants.ACTION_REMOVE_COMMENT + "_" + strIdComment;
+        return CommentConstants.ACTION_REMOVE_COMMENT + "_" + strIdExtendableResource + "_" + strExtendableResourceType;
+    }
+
+    /**
+     * Builds the CSRF token key for the add comment action, scoped to a couple
+     * ( idExtendableResource, extendableResourceType ).
+     *
+     * @param strIdExtendableResource
+     *            the extendable resource id
+     * @param strExtendableResourceType
+     *            the extendable resource type
+     * @return the token key
+     */
+    public static String getAddCommentTokenKey( String strIdExtendableResource, String strExtendableResourceType )
+    {
+        return CommentConstants.ACTION_DO_ADD_COMMENT + "_" + strIdExtendableResource + "_" + strExtendableResourceType;
     }
 
     /**
@@ -832,7 +866,7 @@ public class CommentApp implements XPageApplication
         String strConfirmRemoveComment = String.valueOf( request.getParameter( CommentConstants.PARAMETER_CONFIRM_REMOVE_COMMENT ) );
         String strIdComment = String.valueOf( request.getParameter( CommentConstants.PARAMETER_ID_COMMENT ) );
 
-        if ( !SecurityTokenService.getInstance( ).validate( request, getTokenKey( strIdComment ) ) )
+        if ( !SecurityTokenService.getInstance( ).validate( request, getTokenKey( strIdExtendableResource, strExtendableResourceType ) ) )
         {
             SiteMessageService.setMessage( request, CommentConstants.MESSAGE_ERROR_CANNOT_DELETE, SiteMessage.TYPE_ERROR );
         }
@@ -895,11 +929,20 @@ public class CommentApp implements XPageApplication
                 HttpServletResponse response = LocalVariables.getResponse( );
                 try
                 {
-                    response.sendRedirect( strFromUrl );
+                    // Open redirect control : only redirect to internal (safe) URLs
+                    if ( SecurityUtil.isInternalRedirectUrlSafe( strFromUrl, request ) )
+                    {
+                        response.sendRedirect( strFromUrl );
+                    }
+                    else
+                    {
+                        AppLogService.error( "module-extend-comment : open redirect blocked to {}", strFromUrl );
+                        response.sendRedirect( AppPathService.getBaseUrl( request ) );
+                    }
                 }
                 catch( IOException e )
                 {
-                    // log ?
+                    AppLogService.error( e.getMessage( ), e );
                 }
                 return new XPage( );
             }
