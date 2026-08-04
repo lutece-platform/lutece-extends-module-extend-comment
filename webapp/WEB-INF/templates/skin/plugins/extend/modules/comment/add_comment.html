@@ -61,16 +61,15 @@
 							<input type="text" name="email" size="20" maxlength="255" value="${email!}" />
 						</div>
 					</div>
-				<#else>
-					<input type="hidden" name="email" size="20" maxlength="255" value="${email!}" />
-				</#if>
-			
-				<div class="form-group">
-					<label class="col-xs-12 col-sm-12 col-md-3 col-lg-3" for="name">#i18n{module.extend.comment.add_comment.labelName} * :</label>
-					<div class="col-xs-12 col-sm-12 col-md-6 col-lg-6">
-						<input type="text" name="name" size="20" maxlength="255" value="<#if !commentConfig.enabledAuthMode>${userName!}<#else>${nickname!}</#if>" />
+
+					<div class="form-group">
+						<label class="col-xs-12 col-sm-12 col-md-3 col-lg-3" for="name">#i18n{module.extend.comment.add_comment.labelName} * :</label>
+						<div class="col-xs-12 col-sm-12 col-md-6 col-lg-6">
+							<input type="text" name="name" size="20" maxlength="255" value="<#if !commentConfig.enabledAuthMode>${userName!}<#else>${nickname!}</#if>" />
+						</div>
 					</div>
-				</div>
+				</#if>
+
 				<div class="form-group">
 					<label class="col-xs-12 col-sm-12 col-md-3 col-lg-3" for="comment">#i18n{module.extend.comment.add_comment.labelComment} * :</label>
 					<div class="col-xs-12 col-sm-12 col-md-6 col-lg-6">
