@@ -35,12 +35,9 @@ package fr.paris.lutece.plugins.extend.modules.comment.web;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -71,8 +68,6 @@ import fr.paris.lutece.portal.service.content.XPageAppService;
 import fr.paris.lutece.portal.service.i18n.I18nService;
 import fr.paris.lutece.portal.service.mail.MailService;
 import fr.paris.lutece.portal.service.mailinglist.AdminMailingListService;
-import fr.paris.lutece.portal.service.message.AdminMessage;
-import fr.paris.lutece.portal.service.message.AdminMessageService;
 import fr.paris.lutece.portal.service.message.SiteMessage;
 import fr.paris.lutece.portal.service.message.SiteMessageException;
 import fr.paris.lutece.portal.service.message.SiteMessageService;
@@ -88,7 +83,6 @@ import fr.paris.lutece.portal.service.template.AppTemplateService;
 import fr.paris.lutece.portal.service.util.AppLogService;
 import fr.paris.lutece.portal.service.util.AppPathService;
 import fr.paris.lutece.portal.service.util.AppPropertiesService;
-import fr.paris.lutece.portal.util.mvc.commons.annotations.Action;
 import fr.paris.lutece.portal.util.mvc.utils.MVCUtils;
 import fr.paris.lutece.portal.web.LocalVariables;
 import fr.paris.lutece.portal.web.constants.Messages;
@@ -513,6 +507,9 @@ public class CommentApp implements XPageApplication
             {
                 throw new UserNotSignedException( );
             }
+            comment.setName( getFullName( user ) );
+            comment.setEmail( user.getEmail( ) );
+
         }
 
         // Check mandatory fields
@@ -643,6 +640,16 @@ public class CommentApp implements XPageApplication
         }
         redirectToLastUrl( request, CommentConstants.MESSAGE_ERROR_GENERIC_MESSAGE, strIdExtendableResource );
         return null;
+    }
+
+    /*
+        return the full name of the user
+     */
+    private static String getFullName(LuteceUser user)
+    {
+        return Stream.of( user.getFirstName( ), user.getLastName( ) )
+                .filter( Objects::nonNull )
+                .collect( Collectors.joining(" ") );
     }
 
     private XPage redirectToLastUrl( HttpServletRequest request, String message, String strIdExtendableResource )
