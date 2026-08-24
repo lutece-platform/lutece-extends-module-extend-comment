@@ -76,6 +76,8 @@ public final class CommentConstants
     public static final String PARAMETER_FROM_URL = "from_url";
     public static final String PARAMETER_AUTHORIZE_SUB_COMMENTS = "authorizeSubComments";
     public static final String PARAMETER_NAME = "name";
+    public static final String PARAMETER_EMAIL = "email";
+    public static final String PARAMETER_COMMENT = "comment";
     public static final String PARAMETER_VIEW_ALL_RESOURCES = "viewAllResources";
     public static final String PARAMETER_FILTER_STATE = "filterState";
     public static final String PARAMETER_FILTER_PINNED = "filterPinned";

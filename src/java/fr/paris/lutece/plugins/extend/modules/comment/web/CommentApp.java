@@ -34,7 +34,7 @@
 package fr.paris.lutece.plugins.extend.modules.comment.web;
 
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
+import java.sql.Timestamp;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -44,7 +44,6 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.validation.ConstraintViolation;
 
-import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import fr.paris.lutece.plugins.extend.modules.comment.business.AddCommentPosition;
@@ -482,18 +481,8 @@ public class CommentApp implements XPageApplication
 
         Comment comment = new Comment( );
         LuteceUser user = null;
-        try
-        {
-            BeanUtils.populate( comment, request.getParameterMap( ) );
-        }
-        catch( IllegalAccessException e )
-        {
-            AppLogService.error( "Unable to fetch data from request", e );
-        }
-        catch( InvocationTargetException e )
-        {
-            AppLogService.error( "Unable to fetch data from request", e );
-        }
+        populateComment(comment,request);
+
 
         // Test the captcha
         if ( _bIsCaptchaEnabled )
@@ -649,6 +638,51 @@ public class CommentApp implements XPageApplication
         }
         redirectToLastUrl( request, CommentConstants.MESSAGE_ERROR_GENERIC_MESSAGE, strIdExtendableResource );
         return null;
+    }
+
+
+    /**
+     * Populates a Comment bean from request parameters,
+     * Only setting fields that are safe to expose to the client.
+     * @param comment  the Comment bean to populate
+     * @param request the HTTP request
+     */
+    private void populateComment( Comment comment, HttpServletRequest request )
+    {
+
+        comment.setIdExtendableResource( request.getParameter( CommentConstants.PARAMETER_ID_EXTENDABLE_RESOURCE ) );
+        comment.setExtendableResourceType( request.getParameter( CommentConstants.PARAMETER_EXTENDABLE_RESOURCE_TYPE ) );
+        comment.setName( request.getParameter( CommentConstants.PARAMETER_NAME ) );
+        comment.setEmail( request.getParameter( CommentConstants.PARAMETER_EMAIL ) );
+        comment.setComment( request.getParameter( CommentConstants.MARK_COMMENT ) );
+
+        String strIdParentComment = request.getParameter( CommentConstants.PARAMETER_ID_COMMENT );
+        int nIdParentComment = 0;
+        if ( StringUtils.isNotEmpty( strIdParentComment ) && StringUtils.isNumeric( strIdParentComment ) )
+        {
+            nIdParentComment = Integer.parseInt( strIdParentComment );
+            if ( nIdParentComment > 0 )
+            {
+                Comment parentComment = getCommentService( ).findByPrimaryKey( nIdParentComment );
+                if ( parentComment != null && parentComment.getIdParentComment( ) > 0 )
+                {
+                    nIdParentComment = parentComment.getIdParentComment( );
+                }
+            }
+        }
+        comment.setIdParentComment( nIdParentComment );
+
+        Timestamp currentDate = new Timestamp( new Date( ).getTime( ) );
+        comment.setDateComment( currentDate );
+        comment.setDateLastModif( currentDate );
+
+        comment.setIsAdminComment( false );
+        comment.setPinned( false );
+        comment.setCommentOrder( 0 );
+        comment.setIsImportant( false );
+        comment.setPublished( false );
+        comment.setIdComment( 0 );
+        comment.setIpAddress( SecurityUtil.getRealIp( request ) );
     }
 
     /*
