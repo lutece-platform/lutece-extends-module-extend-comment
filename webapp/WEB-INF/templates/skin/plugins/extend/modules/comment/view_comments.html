@@ -71,7 +71,9 @@
 						@Extender[${comment.idComment},Comment,rating,{show:"all"}]@
 					</div>
 					<div class="span10">
-                                                <img class="avatar" src="${comment.avatarUrl}" title="${comment.name!}" alt="${comment.name!}" />
+                                                <#if comment.avatarUrl?has_content>
+                                                    <img class="avatar" src="${comment.avatarUrl}" title="${comment.name!}" alt="${comment.name!}" />
+                                                </#if>
 						<#if use_bbcode>
 							${comment.BBCodeComment!}
 						<#else>

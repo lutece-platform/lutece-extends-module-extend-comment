@@ -50,6 +50,7 @@ public final class CommentConstants
     public static final String PROPERTY_DEFAULT_LIST_COMMENTS_PER_PAGE = "module.extend.comment.commentInfo.itemsPerPage";
     public static final String PROPERTY_USE_CAPTCHA = "module.extend.comment.useCaptcha";
     public static final String PROPERTY_USE_LUTECE_USER_NAME_AS_AVATAR_KEY = "module.extend.comment.useLuteceUserNameAsAvatarKey";
+    public static final String PROPERTY_AVATAR_ENABLED = "module.extend.comment.avatar.enabled";
     public static final String PROPERTY_COMMENT_ALL_STATE = "module.extend.comment.comment_info.commentAllState";
     public static final String PROPERTY_COMMENT_STATE_PUBLISHED = "module.extend.comment.comment_info.statePublished";
     public static final String PROPERTY_COMMENT_STATE_UN_PUBLISHED = "module.extend.comment.comment_info.stateNotPublished";

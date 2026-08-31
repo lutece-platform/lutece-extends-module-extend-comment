@@ -33,66 +33,125 @@
  */
 package fr.paris.lutece.plugins.extend.modules.comment.service;
 
-import org.apache.commons.lang3.StringUtils;
+import java.util.List;
 
-import fr.paris.lutece.plugins.avatar.service.AvatarService;
-import fr.paris.lutece.plugins.extend.modules.comment.business.Comment;
-import fr.paris.lutece.plugins.extend.modules.comment.util.constants.CommentConstants;
+import fr.paris.lutece.portal.service.spring.SpringContextService;
+import fr.paris.lutece.portal.service.util.AppLogService;
 import fr.paris.lutece.portal.service.util.AppPropertiesService;
+import fr.paris.lutece.plugins.extend.modules.comment.util.constants.CommentConstants;
 
 /**
  * 
- * CommentAvatarService
+ * CommentAvatarService : provides the {@link ICommentAvatarService} implementation to use.
+ * <p>
+ * The plugin-avatar is an optional dependency of this module. The implementation is resolved once, in this order :
+ * </p>
+ * <ol>
+ * <li>a bean of type {@link ICommentAvatarService} declared in a Spring context (lets a site plug its own implementation),</li>
+ * <li>{@link PluginAvatarCommentAvatarService} if the plugin-avatar is available and if the property
+ * <code>module.extend.comment.avatar.enabled</code> is not set to false,</li>
+ * <li>{@link DefaultCommentAvatarService}, which displays no avatar at all.</li>
+ * </ol>
  *
  */
-public class CommentAvatarService implements ICommentAvatarService
+public final class CommentAvatarService
 {
 
-    private static ICommentAvatarService _singleton;
-    private static boolean _bUseLuteceUserNameAsAvatarKey;
+    /** Class of the plugin-avatar API. Referenced by name only : the plugin may not be deployed. */
+    private static final String CLASS_AVATAR_SERVICE = "fr.paris.lutece.plugins.avatar.service.AvatarService";
+    private static final String CLASS_PLUGIN_AVATAR_COMMENT_AVATAR_SERVICE = "fr.paris.lutece.plugins.extend.modules.comment.service.PluginAvatarCommentAvatarService";
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public String getAvatar( Comment comment )
-    {
-        if ( _bUseLuteceUserNameAsAvatarKey && !StringUtils.isEmpty( comment.getLuteceUserName( ) ) )
-        {
-            return AvatarService.getAvatar( comment.getLuteceUserName( ) );
-        }
-        return AvatarService.getAvatar( comment.getEmail( ) );
-    }
+    private static volatile ICommentAvatarService _singleton;
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public String getAvatarUrl( Comment comment )
+    /** Private constructor */
+    private CommentAvatarService( )
     {
-        if ( _bUseLuteceUserNameAsAvatarKey && !StringUtils.isEmpty( comment.getLuteceUserName( ) ) )
-        {
-            return AvatarService.getAvatarUrl( comment.getLuteceUserName( ) );
-        }
-        return AvatarService.getAvatarUrl( comment.getEmail( ) );
     }
 
     /**
      * 
-     * @return singleton
+     * @return the {@link ICommentAvatarService} implementation to use. Never null.
      */
     public static ICommentAvatarService getInstance( )
     {
+        ICommentAvatarService service = _singleton;
 
-        if ( _singleton == null )
+        if ( service == null )
         {
+            synchronized( CommentAvatarService.class )
+            {
+                service = _singleton;
 
-            _singleton = new CommentAvatarService( );
-            _bUseLuteceUserNameAsAvatarKey = AppPropertiesService.getPropertyBoolean( CommentConstants.PROPERTY_USE_LUTECE_USER_NAME_AS_AVATAR_KEY, false );
+                if ( service == null )
+                {
+                    service = resolveService( );
+                    _singleton = service;
+                }
+            }
         }
 
-        return _singleton;
+        return service;
+    }
 
+    /**
+     * Resolve the implementation to use
+     * 
+     * @return the implementation. Never null.
+     */
+    private static ICommentAvatarService resolveService( )
+    {
+        List<ICommentAvatarService> listServices = SpringContextService.getBeansOfType( ICommentAvatarService.class );
+
+        if ( listServices != null && !listServices.isEmpty( ) )
+        {
+            ICommentAvatarService service = listServices.get( 0 );
+            AppLogService.info( "module-extend-comment : avatar service provided by the bean " + service.getClass( ).getName( ) );
+
+            return service;
+        }
+
+        if ( AppPropertiesService.getPropertyBoolean( CommentConstants.PROPERTY_AVATAR_ENABLED, true ) )
+        {
+            ICommentAvatarService service = newPluginAvatarService( );
+
+            if ( service != null )
+            {
+                return service;
+            }
+        }
+
+        AppLogService.info( "module-extend-comment : no avatar provider available, comments will be displayed without avatar" );
+
+        return new DefaultCommentAvatarService( );
+    }
+
+    /**
+     * Instantiate the plugin-avatar based implementation, by reflection, so that the module can run without the plugin-avatar
+     * 
+     * @return the implementation, or null if the plugin-avatar is not available
+     */
+    private static ICommentAvatarService newPluginAvatarService( )
+    {
+        try
+        {
+            Class.forName( CLASS_AVATAR_SERVICE );
+
+            ICommentAvatarService service = (ICommentAvatarService) Class.forName( CLASS_PLUGIN_AVATAR_COMMENT_AVATAR_SERVICE ).newInstance( );
+            AppLogService.info( "module-extend-comment : avatar service provided by the plugin-avatar" );
+
+            return service;
+        }
+        catch( ClassNotFoundException e )
+        {
+            // The plugin-avatar is not deployed : this is a valid setup, the dependency is optional
+            return null;
+        }
+        catch( Exception e )
+        {
+            AppLogService.error( "module-extend-comment : unable to initialize the plugin-avatar based avatar service : " + e.getMessage( ), e );
+
+            return null;
+        }
     }
 
 }
