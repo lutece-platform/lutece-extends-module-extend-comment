@@ -43,7 +43,8 @@ import fr.paris.lutece.plugins.extend.modules.comment.service.CommentService;
 import fr.paris.lutece.plugins.extend.modules.comment.service.ICommentService;
 import fr.paris.lutece.portal.service.dashboard.IPublicDashboardComponent;
 import fr.paris.lutece.portal.service.i18n.I18nService;
-import fr.paris.lutece.portal.service.spring.SpringContextService;
+
+import jakarta.enterprise.inject.spi.CDI;
 
 /**
  * The Class PublicDashboardComment.
@@ -90,8 +91,7 @@ public class PublicDashboardComment implements IPublicDashboardComponent
     private static List<Comment> searchCommentUser( String user_id )
     {
 
-        ICommentService commService = SpringContextService.getBean( CommentService.BEAN_SERVICE );
-
+        ICommentService commService = CDI.current().select(ICommentService.class).get();
         List<Comment> lstComment = commService.findCommentsByLuteceUser( user_id );
 
         return lstComment;

@@ -39,11 +39,11 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
+import jakarta.servlet.http.HttpServletRequest;
 
-import org.springframework.transaction.annotation.Transactional;
+import jakarta.transaction.Transactional;
 
 import fr.paris.lutece.plugins.extend.business.extender.ResourceExtenderDTO;
 import fr.paris.lutece.plugins.extend.business.extender.ResourceExtenderDTOFilter;
@@ -61,30 +61,32 @@ import fr.paris.lutece.portal.service.plugin.Plugin;
 import fr.paris.lutece.portal.service.workflow.WorkflowService;
 import fr.paris.lutece.util.ReferenceList;
 
+import jakarta.enterprise.context.ApplicationScoped;
+
 /**
  * 
  * CommentService
  * 
  */
+@ApplicationScoped
+@Named( "extend-comment.commentService" )
 public class CommentService implements ICommentService
 {
-    /** The Constant BEAN_SERVICE. */
-    public static final String BEAN_SERVICE = "extend-comment.commentService";
-
     @Inject
     private ICommentDAO _commentDAO;
+
     @Inject
-    @Named( ResourceExtenderService.BEAN_SERVICE )
     private IResourceExtenderService _resourceExtenderService;
+
     @Inject
-    @Named( CommentConstants.BEAN_CONFIG_SERVICE )
+    @Named( "extend-comment.commentExtenderConfigService" )
     private IResourceExtenderConfigService _configService;
 
     /**
      * {@inheritDoc}
      */
     @Override
-    @Transactional( CommentPlugin.TRANSACTION_MANAGER )
+    @Transactional
     public synchronized void create( Comment comment, HttpServletRequest request )
     {
         Timestamp currentTimestamp = new Timestamp( new Date( ).getTime( ) );
@@ -105,7 +107,7 @@ public class CommentService implements ICommentService
      * {@inheritDoc}
      */
     @Override
-    @Transactional( CommentPlugin.TRANSACTION_MANAGER )
+    @Transactional
     public synchronized void create( Comment comment )
     {
         Timestamp currentTimestamp = new Timestamp( new Date( ).getTime( ) );
@@ -126,7 +128,7 @@ public class CommentService implements ICommentService
      * {@inheritDoc}
      */
     @Override
-    @Transactional( CommentPlugin.TRANSACTION_MANAGER )
+    @Transactional
     public void update( Comment comment )
     {
         Comment oldComment = findByPrimaryKey( comment.getIdComment( ) );
@@ -143,7 +145,7 @@ public class CommentService implements ICommentService
      * {@inheritDoc}
      */
     @Override
-    @Transactional( CommentPlugin.TRANSACTION_MANAGER )
+    @Transactional
     public void updateCommentStatus( int nIdComment, boolean bPublished )
     {
         _commentDAO.updateCommentStatus( nIdComment, bPublished, CommentPlugin.getPlugin( ) );
@@ -154,7 +156,7 @@ public class CommentService implements ICommentService
      * {@inheritDoc}
      */
     @Override
-    @Transactional( CommentPlugin.TRANSACTION_MANAGER )
+    @Transactional
     public void remove( int nIdComment )
     {
         Comment comment = findByPrimaryKey( nIdComment );
@@ -178,7 +180,7 @@ public class CommentService implements ICommentService
      * {@inheritDoc}
      */
     @Override
-    @Transactional( CommentPlugin.TRANSACTION_MANAGER )
+    @Transactional
     public void removeByResource( String strIdExtendableResource, String strExtendableResourceType )
     {
         List<Integer> listRemovedComments = findIdsByResource( strIdExtendableResource, strExtendableResourceType, false );
@@ -454,7 +456,7 @@ public class CommentService implements ICommentService
     }
 
     @Override
-    @Transactional( CommentPlugin.TRANSACTION_MANAGER )
+    @Transactional
     public void updateFlagImportant( int nIdComment, boolean bImportant )
     {
         Plugin plugin = CommentPlugin.getPlugin( );
@@ -467,7 +469,7 @@ public class CommentService implements ICommentService
     }
 
     @Override
-    @Transactional( CommentPlugin.TRANSACTION_MANAGER )
+    @Transactional
     public void updateCommentPinned( int nIdComment, boolean bPinned )
     {
         Plugin plugin = CommentPlugin.getPlugin( );

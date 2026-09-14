@@ -42,10 +42,10 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
-import javax.validation.ConstraintViolation;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
+import jakarta.validation.ConstraintViolation;
 
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -82,7 +82,6 @@ import fr.paris.lutece.portal.service.prefs.UserPreferencesService;
 import fr.paris.lutece.portal.service.security.LuteceUser;
 import fr.paris.lutece.portal.service.security.SecurityService;
 import fr.paris.lutece.portal.service.security.UserNotSignedException;
-import fr.paris.lutece.portal.service.spring.SpringContextService;
 import fr.paris.lutece.portal.service.template.AppTemplateService;
 import fr.paris.lutece.portal.service.util.AppLogService;
 import fr.paris.lutece.portal.service.util.AppPathService;
@@ -100,12 +99,23 @@ import fr.paris.lutece.util.html.IPaginator;
 import fr.paris.lutece.util.html.Paginator;
 import fr.paris.lutece.util.http.SecurityUtil;
 import fr.paris.lutece.util.url.UrlItem;
+import fr.paris.lutece.portal.service.security.SecurityTokenHandler;
+import fr.paris.lutece.portal.service.security.SecurityTokenService;
+
+
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
+import jakarta.inject.Singleton;
+import jakarta.enterprise.context.SessionScoped;
+import jakarta.enterprise.inject.spi.CDI;
 
 /**
  * 
  * CommentApp
  * 
  */
+@SessionScoped
+@Named( "extend-comment.xpage.extend-comment" )
 public class CommentApp implements XPageApplication
 {
     //
@@ -137,10 +147,19 @@ public class CommentApp implements XPageApplication
     private static final String CONSTANT_AND_HTML = "%26";
 
     // VARIABLES
-    private static ICommentService _commentService;
-    private static IResourceExtenderConfigService _configService;
-    private static IResourceExtenderService _resourceExtenderService;
-    private static IResourceExtenderHistoryService _resourceHistoryService;
+    private static ICommentService _commentService = CDI.current( ).select( ICommentService.class ).get( );
+
+    private static IResourceExtenderConfigService _configService = CDI.current( ).select( IResourceExtenderConfigService.class ).get( );
+
+    private static IResourceExtenderService _resourceExtenderService = CDI.current( ).select( IResourceExtenderService.class ).get( );
+
+    private static IResourceExtenderHistoryService _resourceHistoryService = CDI.current( ).select( IResourceExtenderHistoryService.class ).get( );
+
+    @Inject
+    SecurityTokenHandler _securityTokenHandler;
+
+    @Inject
+    SecurityTokenService _securityTokenService;
 
     private static int _nDefaultItemsPerPage;
 
@@ -427,7 +446,6 @@ public class CommentApp implements XPageApplication
             model.put( CommentConstants.MARK_WEBAPP_URL, AppPathService.getBaseUrl( request ) );
             model.put( CommentConstants.MARK_LOCALE, Locale.getDefault( ) );
 
-            // Add Captcha
             model.put( MARK_IS_ACTIVE_CAPTCHA, _bIsCaptchaEnabled );
 
             if ( _bIsCaptchaEnabled )
@@ -752,10 +770,6 @@ public class CommentApp implements XPageApplication
      */
     private static ICommentService getCommentService( )
     {
-        if ( _commentService == null )
-        {
-            _commentService = SpringContextService.getBean( CommentService.BEAN_SERVICE );
-        }
         return _commentService;
     }
 
@@ -766,10 +780,6 @@ public class CommentApp implements XPageApplication
      */
     private static IResourceExtenderConfigService getConfigService( )
     {
-        if ( _configService == null )
-        {
-            _configService = SpringContextService.getBean( CommentConstants.BEAN_CONFIG_SERVICE );
-        }
         return _configService;
     }
 
@@ -780,10 +790,6 @@ public class CommentApp implements XPageApplication
      */
     private static IResourceExtenderService getResourceExtenderService( )
     {
-        if ( _resourceExtenderService == null )
-        {
-            _resourceExtenderService = SpringContextService.getBean( ResourceExtenderService.BEAN_SERVICE );
-        }
         return _resourceExtenderService;
     }
 
@@ -794,10 +800,6 @@ public class CommentApp implements XPageApplication
      */
     private static IResourceExtenderHistoryService getResourceExtenderHistoryService( )
     {
-        if ( _resourceHistoryService == null )
-        {
-            _resourceHistoryService = SpringContextService.getBean( ResourceExtenderHistoryService.BEAN_SERVICE );
-        }
         return _resourceHistoryService;
     }
 

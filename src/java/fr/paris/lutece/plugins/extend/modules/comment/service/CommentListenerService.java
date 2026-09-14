@@ -36,15 +36,17 @@ package fr.paris.lutece.plugins.extend.modules.comment.service;
 import fr.paris.lutece.plugins.extend.modules.comment.business.Comment;
 import fr.paris.lutece.plugins.extend.modules.comment.business.ICommentDAO;
 import fr.paris.lutece.portal.service.security.LuteceUser;
-import fr.paris.lutece.portal.service.spring.SpringContextService;
 import fr.paris.lutece.portal.service.util.AppLogService;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.inject.Inject;
+import jakarta.enterprise.inject.Instance;
 
 /**
  * Service to manage listeners over comments
@@ -60,6 +62,9 @@ public class CommentListenerService
     private static boolean _bHasListeners;
 
     private static volatile ICommentDAO _commentDAO;
+
+    @Inject
+    private static Instance<ICommentDAO> commentDAOList;
 
     /**
      * Private constructor
@@ -393,7 +398,7 @@ public class CommentListenerService
             {
                 if ( _commentDAO == null )
                 {
-                    List<ICommentDAO> listDao = SpringContextService.getBeansOfType( ICommentDAO.class );
+                    List<ICommentDAO> listDao = commentDAOList.stream( ).collect( Collectors.toList( ) );
                     if ( listDao != null && listDao.size( ) > 0 )
                     {
                         _commentDAO = listDao.get( 0 );

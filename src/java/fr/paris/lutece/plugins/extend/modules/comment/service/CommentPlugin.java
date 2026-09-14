@@ -42,13 +42,16 @@ import fr.paris.lutece.plugins.extend.service.extender.facade.ResourceExtenderSe
 import fr.paris.lutece.portal.service.plugin.Plugin;
 import fr.paris.lutece.portal.service.plugin.PluginDefaultImplementation;
 import fr.paris.lutece.portal.service.plugin.PluginService;
-import fr.paris.lutece.portal.service.spring.SpringContextService;
+
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.inject.spi.CDI;
 
 /**
  *
  * CommentPlugin
  *
  */
+@ApplicationScoped
 public class CommentPlugin extends PluginDefaultImplementation
 {
     /** The Constant PLUGIN_NAME. */
@@ -66,21 +69,10 @@ public class CommentPlugin extends PluginDefaultImplementation
     {
         return PluginService.getPlugin( PLUGIN_NAME );
     }
+    
     @Override
     public void init( )
     {
-        super.init( );
-        ICommentService commentService= SpringContextService.getBean( CommentService.BEAN_SERVICE );
-      //  _commentService.findByListResource(listIdExtendableResource, strExtendableResourceType)
-		//Addition of rating for the exploitation of rating information from the extend plugin
-        ResourceExtenderServiceFacade.addExtenderType(
-        		new ExtenderType< >(
-        			Comment.class,
-        			CommentResourceExtender.EXTENDER_TYPE_COMMENT,
-        			(strIdExtendableResource,strExtendableResourceType)-> commentService.findByListResource(Arrays.asList(strIdExtendableResource), strExtendableResourceType),
-        			commentService::findByListResource,
-        			(strIdExtendableResource,strExtendableResourceType) -> String.valueOf( commentService.getCommentNb(  strIdExtendableResource,  strExtendableResourceType, true, true )),
-        			(strIdExtendableResource,strExtendableResourceType)-> String.valueOf( commentService.getCommentNb(  strIdExtendableResource,  strExtendableResourceType, true, true )) )
-        );
+
     }
 }

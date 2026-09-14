@@ -39,10 +39,10 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -60,6 +60,7 @@ import fr.paris.lutece.plugins.extend.modules.comment.util.constants.CommentCons
 import fr.paris.lutece.plugins.extend.service.ExtendPlugin;
 import fr.paris.lutece.plugins.extend.service.content.ExtendableContentPostProcessor;
 import fr.paris.lutece.plugins.extend.service.extender.IResourceExtenderService;
+import fr.paris.lutece.plugins.extend.service.extender.IResourceExtender;
 import fr.paris.lutece.plugins.extend.service.extender.ResourceExtenderService;
 import fr.paris.lutece.plugins.extend.service.extender.config.IResourceExtenderConfigService;
 import fr.paris.lutece.plugins.extend.util.ExtendErrorException;
@@ -75,7 +76,6 @@ import fr.paris.lutece.portal.service.prefs.UserPreferencesService;
 import fr.paris.lutece.portal.service.resource.IExtendableResource;
 import fr.paris.lutece.portal.service.security.LuteceUser;
 import fr.paris.lutece.portal.service.security.SecurityService;
-import fr.paris.lutece.portal.service.spring.SpringContextService;
 import fr.paris.lutece.portal.service.template.AppTemplateService;
 import fr.paris.lutece.portal.service.util.AppPathService;
 import fr.paris.lutece.portal.service.util.AppPropertiesService;
@@ -88,11 +88,14 @@ import fr.paris.lutece.util.html.IPaginator;
 import fr.paris.lutece.util.html.Paginator;
 import fr.paris.lutece.util.url.UrlItem;
 
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.inject.spi.CDI;
 /**
  * 
  * CommentResourceExtenderComponent
  * 
  */
+@ApplicationScoped
 public class CommentResourceExtenderComponent extends AbstractResourceExtenderComponent
 {
     // TEMPLATES
@@ -105,15 +108,29 @@ public class CommentResourceExtenderComponent extends AbstractResourceExtenderCo
     @Inject
     private ICommentService _commentService;
     @Inject
-    @Named( CommentConstants.BEAN_CONFIG_SERVICE )
+    @Named( "extend-comment.commentExtenderConfigService" )
     private IResourceExtenderConfigService _configService;
+
     @Inject
-    @Named( ResourceExtenderService.BEAN_SERVICE )
     private IResourceExtenderService _resourceExtenderService;
+
+    @Inject
+    @Named( "extend-comment.commentResourceExtender" )
+    private IResourceExtender _resourceExtender;
 
     private int _nDefaultItemsPerPage = AppPropertiesService.getPropertyInt( CommentConstants.PROPERTY_DEFAULT_LIST_COMMENTS_PER_PAGE, 50 );
 
     private volatile ContentPostProcessor _contentPostProcessor;
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public IResourceExtender getResourceExtender( )
+    {
+        return _resourceExtender;
+    }
+
 
     /**
      * {@inheritDoc}
@@ -545,7 +562,7 @@ public class CommentResourceExtenderComponent extends AbstractResourceExtenderCo
             {
                 if ( _contentPostProcessor == null )
                 {
-                    _contentPostProcessor = SpringContextService.getBean( ExtendableContentPostProcessor.BEAN_NAME );
+                    _contentPostProcessor = CDI.current( ).select( ContentPostProcessor.class).get( );
                 }
             }
         }

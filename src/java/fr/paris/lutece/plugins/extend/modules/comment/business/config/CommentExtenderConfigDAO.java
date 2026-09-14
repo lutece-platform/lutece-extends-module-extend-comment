@@ -37,11 +37,16 @@ import fr.paris.lutece.plugins.extend.business.extender.config.IExtenderConfigDA
 import fr.paris.lutece.plugins.extend.modules.comment.service.CommentPlugin;
 import fr.paris.lutece.util.sql.DAOUtil;
 
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Named;
+
 /**
  * 
  * CommentExtenderConfigDAO
  * 
  */
+@ApplicationScoped
+@Named( "extend-comment.CommentExtenderConfigDAO" )
 public class CommentExtenderConfigDAO implements IExtenderConfigDAO<CommentExtenderConfig>
 {
     private static final String SQL_QUERY_INSERT = " INSERT INTO extend_comment_config ( id_extender, is_moderated, nb_comments, id_mailing_list, authorize_sub_comments, use_bbcode, admin_badge, message_comment_created , add_comment_position,is_enabled_auth_mode, is_enabled_display_sub_comments, is_enabled_delete_comments,is_comments_sorted_by_date_creation, id_workflow ) VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ? , ? , ?, ?, ? ) ";

@@ -38,13 +38,16 @@ import fr.paris.lutece.util.xml.XmlUtil;
 
 import java.util.Map;
 
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.enterprise.context.ApplicationScoped;
 
 /**
  * Manager for add on display
  */
+@ApplicationScoped
+@Named( "extend-comment.commentAddon" )
 public class CommentAddOnService implements IResourceDisplayManager
 {
     public static final String PROPERTY_RESOURCE_TYPE = "document";
@@ -52,7 +55,6 @@ public class CommentAddOnService implements IResourceDisplayManager
     private static final String TAG_NUMBER_COMMENT = "document-number-comment";
 
     @Inject
-    @Named( CommentService.BEAN_SERVICE )
     private ICommentService _commentService;
 
     @Override
