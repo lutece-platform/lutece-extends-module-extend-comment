@@ -106,7 +106,7 @@
     <div id="comment-form" class="row">
      <div class="col-xs-12 col-sm-12" >
     <div class="iComment" id="addComment_${comment.idComment!}">
-      <form class="form" method="post" action="jsp/site/Portal.jsp">
+      <form class="form" method="post" action="jsp/site/Portal.jsp" onsubmit="this.querySelector( '[name=add]' ).disabled = true;">
         <input type="hidden" name="page" value="extend-comment">
         <input type="hidden" name="action" value="doAddComment">
         <input type="hidden" name="token" value="${token!}">
