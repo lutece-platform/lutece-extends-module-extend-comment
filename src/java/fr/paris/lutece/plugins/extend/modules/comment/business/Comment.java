@@ -235,7 +235,7 @@ public class Comment implements IExtendableResourceResult
     {
         try
         {
-            return EditorBbcodeService.getInstance( ).parse( _strComment );
+            return EditorBbcodeService.getInstance( ).parseComment( _strComment );
         }
         catch( Exception e )
         {
