@@ -63,6 +63,7 @@ public final class CommentConstants
     // MESSAGES
     public static final String MESSAGE_CONFIRM_REMOVE_COMMENT = "module.extend.comment.message.confirm.removeComment";
     public static final String MESSAGE_ERROR_GENERIC_MESSAGE = "module.extend.comment.message.error.genericMessage";
+    public static final String MESSAGE_ERROR_ACTION_LOCKED = "module.extend.comment.message.error.actionLocked";
     public static final String MESSAGE_NOTIFY_SUBJECT = "module.extend.comment.message.notify.subject";
     public static final String MESSAGE_ERROR_CANNOT_DELETE = "module.extend.comment.message.error.cannotDelete";
 

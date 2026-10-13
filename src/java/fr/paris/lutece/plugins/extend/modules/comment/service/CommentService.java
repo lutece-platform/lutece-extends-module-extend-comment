@@ -56,8 +56,11 @@ import fr.paris.lutece.plugins.extend.modules.comment.util.constants.CommentCons
 import fr.paris.lutece.plugins.extend.service.extender.IResourceExtenderService;
 import fr.paris.lutece.plugins.extend.service.extender.ResourceExtenderService;
 import fr.paris.lutece.plugins.extend.service.extender.config.IResourceExtenderConfigService;
+import fr.paris.lutece.plugins.workflowcore.exception.ResourceWorkflowLockedException;
 import fr.paris.lutece.portal.service.i18n.I18nService;
 import fr.paris.lutece.portal.service.plugin.Plugin;
+import fr.paris.lutece.portal.service.util.AppException;
+import fr.paris.lutece.portal.service.util.AppLogService;
 import fr.paris.lutece.portal.service.workflow.WorkflowService;
 import fr.paris.lutece.util.ReferenceList;
 
@@ -517,7 +520,21 @@ public class CommentService implements ICommentService
         {
 
             WorkflowService.getInstance( ).getState( comment.getIdComment( ), resourceType, idWorkflow, nIdExtendable );
-            WorkflowService.getInstance( ).executeActionAutomatic( comment.getIdComment( ), resourceType, idWorkflow, nIdExtendable );
+
+            try
+            {
+                WorkflowService.getInstance( ).executeActionAutomatic( comment.getIdComment( ), resourceType, idWorkflow, nIdExtendable );
+            }
+            catch( AppException e )
+            {
+                if ( !( e.getCause( ) instanceof ResourceWorkflowLockedException ) )
+                {
+                    throw e;
+                }
+
+                // The automatic action daemon is already processing this comment: the creation of the comment must not fail
+                AppLogService.info( "Automatic action skipped for the comment {}: {}", comment.getIdComment( ), e.getCause( ).getMessage( ) );
+            }
         }
     }
 

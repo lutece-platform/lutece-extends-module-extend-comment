@@ -56,6 +56,7 @@ import fr.paris.lutece.plugins.extend.service.extender.ResourceExtenderService;
 import fr.paris.lutece.plugins.extend.service.extender.config.IResourceExtenderConfigService;
 import fr.paris.lutece.plugins.extend.service.extender.history.IResourceExtenderHistoryService;
 import fr.paris.lutece.plugins.extend.service.extender.history.ResourceExtenderHistoryService;
+import fr.paris.lutece.plugins.workflowcore.exception.ResourceWorkflowLockedException;
 import fr.paris.lutece.portal.business.user.AdminUser;
 import fr.paris.lutece.portal.service.admin.AdminUserService;
 import fr.paris.lutece.portal.service.message.AdminMessage;
@@ -461,6 +462,12 @@ public class CommentJspBean extends PluginAdminPageJspBean
             }
             catch( Exception e )
             {
+                if ( e.getCause( ) instanceof ResourceWorkflowLockedException )
+                {
+                    // Another action is in progress on this comment (other user or instance) or its state has changed
+                    return AdminMessageService.getMessageUrl( request, CommentConstants.MESSAGE_ERROR_ACTION_LOCKED, AdminMessage.TYPE_STOP );
+                }
+
                 AppLogService.error( "Error processing action for record {} ", nIdComment, e.getMessage( ), e );
             }
             
@@ -538,6 +545,11 @@ public class CommentJspBean extends PluginAdminPageJspBean
             }
             catch ( AppException e )
             {
+                if ( e.getCause( ) instanceof ResourceWorkflowLockedException )
+                {
+                    return AdminMessageService.getMessageUrl( request, CommentConstants.MESSAGE_ERROR_ACTION_LOCKED, AdminMessage.TYPE_STOP );
+                }
+
                 AppLogService.error( "Error processing action for record {}", nIdComment, e );
             }
         
