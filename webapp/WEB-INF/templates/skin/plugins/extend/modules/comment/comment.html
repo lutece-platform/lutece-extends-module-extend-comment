@@ -1,186 +1,127 @@
-<div class="row">
-  <#if listComments?? && listComments?has_content>
-    <div class="form-group">
-      <a href="jsp/site/Portal.jsp?page=extend-comment&amp;idExtendableResource=${idExtendableResource!}&amp;extendableResourceType=${extendableResourceType!}" class="btn btn-primary btn-sm" title="#i18n{module.extend.comment.comment.labelViewComments}" >
-        <i class="glyphicon glyphicon-eye-open">&nbsp;</i>&nbsp;#i18n{module.extend.comment.comment.labelViewComments}
-      </a>
-
-      <#if addCommentPosition = 0>
-        <a href="jsp/site/Portal.jsp?page=extend-comment&amp;action=addComment&amp;idExtendableResource=${idExtendableResource!}&amp;extendableResourceType=${extendableResourceType!}" class="btn btn-primary btn-sm" title="#i18n{module.extend.comment.comment.labelAddComment}">
-          <i class="glyphicon glyphicon-plus">&nbsp;</i>&nbsp;#i18n{module.extend.comment.comment.labelAddComment}
-        </a>
-      <#elseif addCommentPosition = 1 || addCommentPosition = 3>
-        <#include "/skin/plugins/extend/modules/comment/add_comment.html" />
-      </#if>
-    </div>
-    <#list listComments as comment>
-      <div class="well">
-        <fieldset>
-          <legend>
-            #i18n{module.extend.comment.view_comments.labelPosted} ${comment.dateComment!} #i18n{module.extend.comment.view_comments.labelBy} ${comment.name!}
-            <#if comment.isAdminComment><div>${adminBadge!}</div></#if>
-            <#if registeredUserEmail?? >
-                <#if comment.email == registeredUserEmail && comment.numberSubComments <= 0 >
-                    <#if canDeleteComments?has_content && canDeleteComments>
-                <div class="pull-right">
-                    <a href="jsp/site/Portal.jsp?page=extend-comment&amp;action=confirmRemoveComment&amp;idExtendableResource=${idExtendableResource!}&amp;extendableResourceType=${extendableResourceType!}&amp;idComment=${comment.idComment}"
-                        class="btn btn-danger btn-sm" title="#i18n{portal.util.labelDelete}" >
-                        <i class="glyphicon glyphicon-trash"></i>
-                    </a>
-                </div>
-                    </#if>
-                </#if>
-            </#if>
-          </legend>
-          <div class="pull-right">
-            @Extender[${comment.idComment},Comment,rating,{show:"vote"}]@
-          </div>
-          <p>
-                        <img class="avatar" src="${comment.avatarUrl}" title="${comment.name!}" alt="${comment.name!}" />
-            <#if use_bbcode>
-              ${comment.BBCodeComment!}
-            <#else>
-              ${comment.comment!}
-            </#if>
-          </p>
-          <#if 0 < comment.numberSubComments >
-          
-    
-          <div class="span11">
-                <#if comment.listSubComments?? && 0 < comment.listSubComments?size && displaySubComments>
-                <p> #i18n{module.extend.comment.comment_info.publishedSubComments}  (${comment.numberSubComments})</p>
-                  <div <#if !idComment?? || comment.idComment?string != idComment>class="commentComments"</#if>>
-                    <#list comment.listSubComments as subComment>
-                      <blockquote>
-                        <div>
-                          <strong>
-                            #i18n{module.extend.comment.view_comments.labelPosted} ${subComment.dateComment!} #i18n{module.extend.comment.view_comments.labelBy} ${subComment.name!}</p>
-                           
-                            <#if subComment.isAdminComment>
-                              <div>${adminBadge!}</div>
-                            </#if>
-                          </strong>
-                        </div>
-                        <#if registeredUserEmail?? >
-                            <#if subComment.email == registeredUserEmail && subComment.numberSubComments <= 0 >
-                                <#if canDeleteComments?has_content && canDeleteComments>
-                            <div class="pull-right">
-                                <a href="jsp/site/Portal.jsp?page=extend-comment&amp;action=confirmRemoveComment&amp;idExtendableResource=${idExtendableResource!}&amp;extendableResourceType=${extendableResourceType!}&amp;idComment=${subComment.idComment}"
-                                    class="btn btn-danger btn-sm" title="#i18n{portal.util.labelDelete}" >
-                                    <i class="glyphicon glyphicon-trash"></i>
-                                </a>
-                            </div>
-                                </#if>
-                            </#if>
-                        </#if>
-                        <div class="well">
-                          <p>
-                            <#if use_bbcode>
-                              ${subComment.BBCodeComment!}
-                            <#else>
-                              ${subComment.comment!}  
-                            </#if>
-                          </p>
-                        </div>
-      
-                      </blockquote>
-                    </#list>
-                  
-                  </div>
-      
-                </#if>
-          </#if>
-        </fieldset>
-      </div>
-       <#if allowSubComments && myLuteceUser??>
-    <div class="pull-right">
-    
-       <div class="col-xs-12 col-sm-5 col-md-7">
-       <button id="${comment.idComment!}"  class="btn btn-sm btn-primary" onclick="addComment(${comment.idComment!})"> <i class="glyphicon glyphicon-plus">&nbsp;</i>&nbsp;<span class="hidden-phone">#i18n{module.extend.comment.view_comments.labelAnswerComment}</span>  </button> 
-    
-    </div>
-    </div>
-
-    <div id="comment-form" class="row">
-     <div class="col-xs-12 col-sm-12" >
-    <div class="iComment" id="addComment_${comment.idComment!}">
-      <form class="form" method="post" action="jsp/site/Portal.jsp">
-        <input type="hidden" name="page" value="extend-comment">
-        <input type="hidden" name="action" value="doAddComment">
-        <input type="hidden" name="idParentComment" value="${comment.idComment!}">
-       
-        <#if returnToCommentList?? && returnToCommentList>
-            <input type="hidden" name="returnToCommentList" value="true">
-        </#if>
-        <#if from_url?? && from_url?has_content && from_url != "null">
-            <input type="hidden" name="from_url" value="${from_url!}">
-        </#if>
-        <input type="hidden" name="idExtendableResource" value="${idExtendableResource!}">
-        <input type="hidden" name="extendableResourceType" value="${extendableResourceType!}">
-        <#if !commentConfig.enabledAuthMode>
-          <div class="form-group">
-              <label  for="email">#i18n{module.extend.comment.add_comment.labelEmail} * :</label>
-              <input type="text" name="email" class="form-control" maxlength="255" value="${email!}" />
-          </div>
-        <#else>
-          <input type="hidden" name="email" class="form-control" value="${email!}">
-        </#if>
-        <#if commentConfig.enabledAuthMode>
-          <input type="hidden" id="comment-name" name="name" value="${nickname!}">
-        <#else>
-          <div class="form-group">
-            <label  for="name">#i18n{module.extend.comment.add_comment.labelName} * :</label>
-            <input type="text" id="comment-name" name="name" size="20" maxlength="255" value="${userName!}" />
-          </div>
-        </#if>
-        <div class="form-group">
-          <label for="comment" class="sr-only">#i18n{module.extend.comment.add_comment.labelComment} * :</label>
-          <textarea  name="comment" class="form-control" rows="6" placeholder="Merci d'indiquer votre commentaire"></textarea>
-        </div>
-        <#if is_active_captcha>
-          <div class="form-group">
-            ${captcha!}
-          </div>
-        </#if>
-        <div class="form-group text-center">
-          <button class="btn btn-idee" type="submit" name="add" value="#i18n{portal.util.labelValidate}" title="#i18n{portal.util.labelValidate}" >
-             #i18n{portal.util.labelValidate}
-          </button>
-          <#if addCommentPosition = 0>
-            <button class="btn btn-idee" type="button" name="cancel" onclick="javascript:history.back();" value="#i18n{portal.util.labelBack}" title="#i18n{portal.util.labelBack}" >
-              #i18n{portal.util.labelBack}
-            </button>
-          </#if>
-        </div>
-      </form>
-      </div>
-    </div>
-  </div>              
-  </#if>
-  </#list> 
-
-</#if>
-
-  <div class="form-group"> 
-    <a href="jsp/site/Portal.jsp?page=extend-comment&amp;idExtendableResource=${idExtendableResource!}&amp;extendableResourceType=${extendableResourceType!}" class="btn btn-primary btn-sm" title="#i18n{module.extend.comment.comment.labelViewComments}" >
-        <i class="glyphicon glyphicon-eye-open">&nbsp;</i>&nbsp;#i18n{module.extend.comment.comment.labelViewComments}
-    </a>
-    <#if addCommentPosition = 0>
-      <a href="jsp/site/Portal.jsp?page=extend-comment&amp;action=addComment&amp;idExtendableResource=${idExtendableResource!}&amp;extendableResourceType=${extendableResourceType!}" class="btn btn-primary btn-sm" title="#i18n{module.extend.comment.comment.labelAddComment}">
-        <i class="glyphicon glyphicon-plus">&nbsp;</i>&nbsp;#i18n{module.extend.comment.comment.labelAddComment}
-      </a>  
-    <#elseif addCommentPosition = 2 || addCommentPosition = 3>
-      <#include "/skin/plugins/extend/modules/comment/add_comment.html" />
-    </#if>
-  </div>
-</div> 
-<script>
-  $(document).ready( function () {
-    $( "div.iComment" ).hide();
-  });
-
-  function addComment(i)
-  {
-      $( "#addComment_"+i ).slideToggle( "slow" );   
-  }
-</script>
+<#assign resourceParams>idExtendableResource=${idExtendableResource!}&amp;extendableResourceType=${extendableResourceType!}</#assign>
+<#macro commentLinks>
+	<@cBtn label='#i18n{module.extend.comment.comment.labelViewComments}' class='primary btn-sm' href='jsp/site/Portal.jsp?page=extend-comment&amp;${resourceParams}'>
+		<@cIcon name='eye' />
+	</@cBtn>
+	<#if addCommentPosition = 0>
+		<@cBtn label='#i18n{module.extend.comment.comment.labelAddComment}' class='primary btn-sm' href='jsp/site/Portal.jsp?page=extend-comment&amp;action=addComment&amp;${resourceParams}'>
+			<@cIcon name='plus' />
+		</@cBtn>
+	</#if>
+</#macro>
+<#macro deleteButton idComment>
+	<@cBlock class='float-end'>
+		<@cBtn label='' class='danger btn-sm' href='jsp/site/Portal.jsp?page=extend-comment&amp;action=confirmRemoveComment&amp;${resourceParams}&amp;idComment=${idComment}' params='title="#i18n{portal.util.labelDelete}"'>
+			<@cIcon name='trash' title='#i18n{portal.util.labelDelete}' />
+		</@cBtn>
+	</@cBlock>
+</#macro>
+<@cRow>
+	<#if listComments?? && listComments?has_content>
+		<@cBlock class='mb-3'>
+			<@commentLinks />
+			<#if addCommentPosition = 1 || addCommentPosition = 3>
+				<#include "/skin/plugins/extend/modules/comment/add_comment.html" />
+			</#if>
+		</@cBlock>
+		<#list listComments as comment>
+			<@cCard class='mb-3'>
+				<@cTitle level=3 class='h5'>
+					#i18n{module.extend.comment.view_comments.labelPosted} ${comment.dateComment!} #i18n{module.extend.comment.view_comments.labelBy} ${comment.name!}
+					<#if comment.isAdminComment><@cBlock>${adminBadge!}</@cBlock></#if>
+				</@cTitle>
+				<#if registeredUserEmail?? && comment.email == registeredUserEmail && comment.numberSubComments <= 0 && canDeleteComments?has_content && canDeleteComments>
+					<@deleteButton idComment=comment.idComment />
+				</#if>
+				<@cBlock class='float-end'>
+					@Extender[${comment.idComment},Comment,rating,{show:"vote"}]@
+				</@cBlock>
+				<@cText>
+					<@cImg src=comment.avatarUrl class='avatar' alt=comment.name! params='title="${comment.name!}"' />
+					<#if use_bbcode>
+						${comment.BBCodeComment!}
+					<#else>
+						${comment.comment!}
+					</#if>
+				</@cText>
+				<#if 0 < comment.numberSubComments && comment.listSubComments?? && 0 < comment.listSubComments?size && displaySubComments>
+					<details<#if idComment?? && comment.idComment?string == idComment> open</#if>>
+						<summary>#i18n{module.extend.comment.comment_info.publishedSubComments} (${comment.numberSubComments})</summary>
+						<#list comment.listSubComments as subComment>
+							<@cBlock class='border-start border-3 ps-3 my-3'>
+								<@cText>
+									<strong>#i18n{module.extend.comment.view_comments.labelPosted} ${subComment.dateComment!} #i18n{module.extend.comment.view_comments.labelBy} ${subComment.name!}</strong>
+								</@cText>
+								<#if subComment.isAdminComment>
+									<@cBlock>${adminBadge!}</@cBlock>
+								</#if>
+								<#if registeredUserEmail?? && subComment.email == registeredUserEmail && subComment.numberSubComments <= 0 && canDeleteComments?has_content && canDeleteComments>
+									<@deleteButton idComment=subComment.idComment />
+								</#if>
+								<@cBlock class='bg-light p-2'>
+									<#if use_bbcode>
+										${subComment.BBCodeComment!}
+									<#else>
+										${subComment.comment!}
+									</#if>
+								</@cBlock>
+							</@cBlock>
+						</#list>
+					</details>
+				</#if>
+			</@cCard>
+			<#if allowSubComments && myLuteceUser??>
+				<#assign formSuffix = comment.idComment?c>
+				<@cBlock class='mb-3'>
+					<@cBtn label='#i18n{module.extend.comment.view_comments.labelAnswerComment}' class='primary btn-sm' type='button' params='data-bs-toggle="collapse" data-bs-target="#addComment_${formSuffix}" aria-expanded="false" aria-controls="addComment_${formSuffix}"'>
+						<@cIcon name='plus' />
+					</@cBtn>
+				</@cBlock>
+				<@cBlock class='collapse mb-3' id='addComment_${formSuffix}'>
+					<@cForm action='jsp/site/Portal.jsp'>
+						<@cInput type='hidden' name='page' value='extend-comment' id='page-${formSuffix}' />
+						<@cInput type='hidden' name='action' value='doAddComment' id='action-${formSuffix}' />
+						<@cInput type='hidden' name='idParentComment' value='${comment.idComment!}' id='idParentComment-${formSuffix}' />
+						<#if returnToCommentList?? && returnToCommentList>
+							<@cInput type='hidden' name='returnToCommentList' value='true' id='returnToCommentList-${formSuffix}' />
+						</#if>
+						<#if from_url?? && from_url?has_content && from_url != "null">
+							<@cInput type='hidden' name='from_url' value='${from_url!}' id='from_url-${formSuffix}' />
+						</#if>
+						<@cInput type='hidden' name='idExtendableResource' value='${idExtendableResource!}' id='idExtendableResource-${formSuffix}' />
+						<@cInput type='hidden' name='extendableResourceType' value='${extendableResourceType!}' id='extendableResourceType-${formSuffix}' />
+						<#if !commentConfig.enabledAuthMode>
+							<@cField label='#i18n{module.extend.comment.add_comment.labelEmail}' for='email-${formSuffix}' required=true>
+								<@cInput type='email' name='email' id='email-${formSuffix}' maxlength=255 value='${email!}' required=true />
+							</@cField>
+							<@cField label='#i18n{module.extend.comment.add_comment.labelName}' for='comment-name-${formSuffix}' required=true>
+								<@cInput name='name' id='comment-name-${formSuffix}' maxlength=255 value='${userName!}' required=true />
+							</@cField>
+						<#else>
+							<@cInput type='hidden' name='email' id='email-${formSuffix}' value='${email!}' />
+							<@cInput type='hidden' name='name' id='comment-name-${formSuffix}' value='${nickname!}' />
+						</#if>
+						<@cField label='#i18n{module.extend.comment.add_comment.labelComment}' for='comment-${formSuffix}' required=true>
+							<@cTextArea name='comment' id='comment-${formSuffix}' rows=6 placeholder='#i18n{module.extend.comment.add_comment.placeholderComment}' required=true />
+						</@cField>
+						<#if is_active_captcha>
+							<@cBlock>${captcha!}</@cBlock>
+						</#if>
+						<@cBlock class='d-flex gap-2 mt-3'>
+							<@cBtn label='#i18n{portal.util.labelValidate}' class='primary btn-sm' type='submit' />
+							<#if addCommentPosition = 0>
+								<@cBtn label='#i18n{portal.util.labelBack}' class='secondary btn-sm' type='button' params='onclick="history.back( )"' />
+							</#if>
+						</@cBlock>
+					</@cForm>
+				</@cBlock>
+			</#if>
+		</#list>
+	</#if>
+	<@cBlock class='mb-3'>
+		<@commentLinks />
+		<#if addCommentPosition = 2 || addCommentPosition = 3>
+			<#include "/skin/plugins/extend/modules/comment/add_comment.html" />
+		</#if>
+	</@cBlock>
+</@cRow>

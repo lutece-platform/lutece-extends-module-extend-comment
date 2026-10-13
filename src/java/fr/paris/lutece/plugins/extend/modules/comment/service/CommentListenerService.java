@@ -42,11 +42,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.inject.Inject;
-import jakarta.enterprise.inject.Instance;
+import jakarta.enterprise.inject.spi.CDI;
 
 /**
  * Service to manage listeners over comments
@@ -62,9 +60,6 @@ public class CommentListenerService
     private static boolean _bHasListeners;
 
     private static volatile ICommentDAO _commentDAO;
-
-    @Inject
-    private static Instance<ICommentDAO> commentDAOList;
 
     /**
      * Private constructor
@@ -398,11 +393,7 @@ public class CommentListenerService
             {
                 if ( _commentDAO == null )
                 {
-                    List<ICommentDAO> listDao = commentDAOList.stream( ).collect( Collectors.toList( ) );
-                    if ( listDao != null && listDao.size( ) > 0 )
-                    {
-                        _commentDAO = listDao.get( 0 );
-                    }
+                    _commentDAO = CDI.current( ).select( ICommentDAO.class ).stream( ).findFirst( ).orElse( null );
                 }
             }
         }

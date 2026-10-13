@@ -46,6 +46,7 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -112,7 +113,7 @@ public class CommentDAO implements ICommentDAO
      * {@inheritDoc}
      */
     @Override
-    public synchronized void insert( Comment comment, Plugin plugin )
+    public void insert( Comment comment, Plugin plugin )
     {
         try ( DAOUtil daoUtil = new DAOUtil( SQL_QUERY_INSERT, Statement.RETURN_GENERATED_KEYS, plugin ) )
         {
@@ -139,7 +140,6 @@ public class CommentDAO implements ICommentDAO
             {
                 comment.setIdComment( daoUtil.getGeneratedKeyInt( 1 ) );
             }
-            daoUtil.free( );
         }
     }
 
@@ -149,18 +149,18 @@ public class CommentDAO implements ICommentDAO
     @Override
     public Comment load( int nIdComment, Plugin plugin )
     {
-        DAOUtil daoUtil = new DAOUtil( SQL_QUERY_SELECT, plugin );
-        daoUtil.setInt( 1, nIdComment );
-        daoUtil.executeQuery( );
-
         Comment comment = null;
-
-        if ( daoUtil.next( ) )
+        try ( DAOUtil daoUtil = new DAOUtil( SQL_QUERY_SELECT, plugin ) )
         {
-            comment = getCommentInfo( daoUtil );
-        }
+            daoUtil.setInt( 1, nIdComment );
+            daoUtil.executeQuery( );
 
-        daoUtil.free( );
+
+            if ( daoUtil.next( ) )
+            {
+                comment = getCommentInfo( daoUtil );
+            }
+        }
 
         return comment;
     }
@@ -171,11 +171,12 @@ public class CommentDAO implements ICommentDAO
     @Override
     public void delete( int nIdComment, Plugin plugin )
     {
-        DAOUtil daoUtil = new DAOUtil( SQL_QUERY_DELETE, plugin );
-        daoUtil.setInt( 1, nIdComment );
+        try ( DAOUtil daoUtil = new DAOUtil( SQL_QUERY_DELETE, plugin ) )
+        {
+            daoUtil.setInt( 1, nIdComment );
 
-        daoUtil.executeUpdate( );
-        daoUtil.free( );
+            daoUtil.executeUpdate( );
+        }
     }
 
     /**
@@ -190,15 +191,16 @@ public class CommentDAO implements ICommentDAO
         {
             sbSql.append( SQL_QUERY_FILTER_ID_RESOURCE );
         }
-        DAOUtil daoUtil = new DAOUtil( sbSql.toString( ), plugin );
-        daoUtil.setString( nIndex++, strExtendableResourceType );
-        if ( !ResourceExtenderDTOFilter.WILDCARD_ID_RESOURCE.equals( strIdExtendableResource ) )
+        try ( DAOUtil daoUtil = new DAOUtil( sbSql.toString( ), plugin ) )
         {
-            daoUtil.setString( nIndex++, strIdExtendableResource );
-        }
+            daoUtil.setString( nIndex++, strExtendableResourceType );
+            if ( !ResourceExtenderDTOFilter.WILDCARD_ID_RESOURCE.equals( strIdExtendableResource ) )
+            {
+                daoUtil.setString( nIndex++, strIdExtendableResource );
+            }
 
-        daoUtil.executeUpdate( );
-        daoUtil.free( );
+            daoUtil.executeUpdate( );
+        }
     }
 
     /**
@@ -208,26 +210,27 @@ public class CommentDAO implements ICommentDAO
     public void store( Comment comment, Plugin plugin )
     {
         int nIndex = 1;
-        DAOUtil daoUtil = new DAOUtil( SQL_QUERY_UPDATE, plugin );
-        daoUtil.setString( nIndex++, comment.getIdExtendableResource( ) );
-        daoUtil.setString( nIndex++, comment.getExtendableResourceType( ) );
-        daoUtil.setTimestamp( nIndex++, comment.getDateComment( ) );
-        daoUtil.setString( nIndex++, comment.getName( ) );
-        daoUtil.setString( nIndex++, comment.getEmail( ) );
-        daoUtil.setString( nIndex++, comment.getIpAddress( ) );
-        daoUtil.setString( nIndex++, comment.getComment( ) );
-        daoUtil.setBoolean( nIndex++, comment.isPublished( ) );
-        daoUtil.setTimestamp( nIndex++, comment.getDateLastModif( ) );
-        daoUtil.setInt( nIndex++, comment.getIdParentComment( ) );
-        daoUtil.setBoolean( nIndex++, comment.getIsAdminComment( ) );
-        daoUtil.setBoolean( nIndex++, comment.isPinned( ) );
-        daoUtil.setInt( nIndex++, comment.getCommentOrder( ) );
-        daoUtil.setBoolean( nIndex++, comment.getIsImportant( ) );
+        try ( DAOUtil daoUtil = new DAOUtil( SQL_QUERY_UPDATE, plugin ) )
+        {
+            daoUtil.setString( nIndex++, comment.getIdExtendableResource( ) );
+            daoUtil.setString( nIndex++, comment.getExtendableResourceType( ) );
+            daoUtil.setTimestamp( nIndex++, comment.getDateComment( ) );
+            daoUtil.setString( nIndex++, comment.getName( ) );
+            daoUtil.setString( nIndex++, comment.getEmail( ) );
+            daoUtil.setString( nIndex++, comment.getIpAddress( ) );
+            daoUtil.setString( nIndex++, comment.getComment( ) );
+            daoUtil.setBoolean( nIndex++, comment.isPublished( ) );
+            daoUtil.setTimestamp( nIndex++, comment.getDateLastModif( ) );
+            daoUtil.setInt( nIndex++, comment.getIdParentComment( ) );
+            daoUtil.setBoolean( nIndex++, comment.getIsAdminComment( ) );
+            daoUtil.setBoolean( nIndex++, comment.isPinned( ) );
+            daoUtil.setInt( nIndex++, comment.getCommentOrder( ) );
+            daoUtil.setBoolean( nIndex++, comment.getIsImportant( ) );
 
-        daoUtil.setInt( nIndex++, comment.getIdComment( ) );
+            daoUtil.setInt( nIndex++, comment.getIdComment( ) );
 
-        daoUtil.executeUpdate( );
-        daoUtil.free( );
+            daoUtil.executeUpdate( );
+        }
     }
 
     /**
@@ -237,13 +240,14 @@ public class CommentDAO implements ICommentDAO
     public void updateCommentStatus( int nIdComment, boolean bPublished, Plugin plugin )
     {
         int nIndex = 1;
-        DAOUtil daoUtil = new DAOUtil( SQL_QUERY_UPDATE_COMMENT_PUBLISHED, plugin );
-        daoUtil.setBoolean( nIndex++, bPublished );
-        daoUtil.setTimestamp( nIndex++, new Timestamp( new Date( ).getTime( ) ) );
-        daoUtil.setInt( nIndex++, nIdComment );
+        try ( DAOUtil daoUtil = new DAOUtil( SQL_QUERY_UPDATE_COMMENT_PUBLISHED, plugin ) )
+        {
+            daoUtil.setBoolean( nIndex++, bPublished );
+            daoUtil.setTimestamp( nIndex++, new Timestamp( new Date( ).getTime( ) ) );
+            daoUtil.setInt( nIndex++, nIdComment );
 
-        daoUtil.executeUpdate( );
-        daoUtil.free( );
+            daoUtil.executeUpdate( );
+        }
     }
 
     /**
@@ -268,23 +272,23 @@ public class CommentDAO implements ICommentDAO
         {
             sbSQL.append( SQL_AND ).append( SQL_FILTER_SELECT_PARENTS );
         }
-        DAOUtil daoUtil = new DAOUtil( sbSQL.toString( ), plugin );
-
-        daoUtil.setString( nIndex++, strExtendableResourceType );
-        if ( !strIdExtendableResource.equals( CONSTANT_ALL_RESSOURCE_ID ) )
-        {
-            daoUtil.setString( nIndex++, strIdExtendableResource );
-        }
-        daoUtil.executeQuery( );
-
         int nCount = 0;
-
-        if ( daoUtil.next( ) )
+        try ( DAOUtil daoUtil = new DAOUtil( sbSQL.toString( ), plugin ) )
         {
-            nCount = daoUtil.getInt( 1 );
-        }
 
-        daoUtil.free( );
+            daoUtil.setString( nIndex++, strExtendableResourceType );
+            if ( !strIdExtendableResource.equals( CONSTANT_ALL_RESSOURCE_ID ) )
+            {
+                daoUtil.setString( nIndex++, strIdExtendableResource );
+            }
+            daoUtil.executeQuery( );
+
+
+            if ( daoUtil.next( ) )
+            {
+                nCount = daoUtil.getInt( 1 );
+            }
+        }
 
         return nCount;
     }
@@ -320,17 +324,17 @@ public class CommentDAO implements ICommentDAO
         sbSQL.append( SQL_LIMIT ).append( nNbComments );
 
         int nIndex = 1;
-        DAOUtil daoUtil = new DAOUtil( sbSQL.toString( ), plugin );
-        daoUtil.setString( nIndex++, strIdExtendableResource );
-        daoUtil.setString( nIndex++, strExtendableResourceType );
-        daoUtil.executeQuery( );
-
-        while ( daoUtil.next( ) )
+        try ( DAOUtil daoUtil = new DAOUtil( sbSQL.toString( ), plugin ) )
         {
-            listComments.add( getCommentInfo( daoUtil ) );
-        }
+            daoUtil.setString( nIndex++, strIdExtendableResource );
+            daoUtil.setString( nIndex++, strExtendableResourceType );
+            daoUtil.executeQuery( );
 
-        daoUtil.free( );
+            while ( daoUtil.next( ) )
+            {
+                listComments.add( getCommentInfo( daoUtil ) );
+            }
+        }
 
         return listComments;
     }
@@ -405,42 +409,42 @@ public class CommentDAO implements ICommentDAO
 
         // We now proceed the SQL request
         int nIndex = 1;
-        DAOUtil daoUtil = new DAOUtil( sbSQL.toString( ), plugin );
-        if ( strIdExtendableResource.equals( CONSTANT_ALL_RESSOURCE_ID ) )
+        try ( DAOUtil daoUtil = new DAOUtil( sbSQL.toString( ), plugin ) )
         {
-            daoUtil.setString( nIndex++, CONSTANT_SQL_ALL_RESSOURCE_ID );
-
-        }
-        else
-        {
-            daoUtil.setString( nIndex++, strIdExtendableResource );
-        }
-        daoUtil.setString( nIndex++, strExtendableResourceType );
-
-        if ( StringUtils.isNotEmpty( commentFilter.getLuteceUserName( ) ) )
-        {
-
-            daoUtil.setString( nIndex++, commentFilter.getLuteceUserName( ) );
-        }
-
-        if ( nMaxItemsNumber > 0 )
-        {
-            if ( nItemsOffset > 0 )
+            if ( strIdExtendableResource.equals( CONSTANT_ALL_RESSOURCE_ID ) )
             {
-                daoUtil.setInt( nIndex++, nItemsOffset );
+                daoUtil.setString( nIndex++, CONSTANT_SQL_ALL_RESSOURCE_ID );
+
             }
-            daoUtil.setInt( nIndex++, nMaxItemsNumber );
+            else
+            {
+                daoUtil.setString( nIndex++, strIdExtendableResource );
+            }
+            daoUtil.setString( nIndex++, strExtendableResourceType );
+
+            if ( StringUtils.isNotEmpty( commentFilter.getLuteceUserName( ) ) )
+            {
+
+                daoUtil.setString( nIndex++, commentFilter.getLuteceUserName( ) );
+            }
+
+            if ( nMaxItemsNumber > 0 )
+            {
+                if ( nItemsOffset > 0 )
+                {
+                    daoUtil.setInt( nIndex++, nItemsOffset );
+                }
+                daoUtil.setInt( nIndex++, nMaxItemsNumber );
+            }
+
+            daoUtil.executeQuery( );
+
+            // We fetch results
+            while ( daoUtil.next( ) )
+            {
+                listComments.add( getCommentInfo( daoUtil ) );
+            }
         }
-
-        daoUtil.executeQuery( );
-
-        // We fetch results
-        while ( daoUtil.next( ) )
-        {
-            listComments.add( getCommentInfo( daoUtil ) );
-        }
-
-        daoUtil.free( );
 
         return listComments;
     }
@@ -458,21 +462,22 @@ public class CommentDAO implements ICommentDAO
         // We sort results
         addSqlOrderByCommentFilter( commentFilter, sbSQL );
 
-        DAOUtil daoUtil = new DAOUtil( sbSQL.toString( ), plugin );
-        daoUtil.setInt( nIndex++, nIdParent );
-
-        if ( StringUtils.isNotEmpty( commentFilter.getLuteceUserName( ) ) )
+        try ( DAOUtil daoUtil = new DAOUtil( sbSQL.toString( ), plugin ) )
         {
+            daoUtil.setInt( nIndex++, nIdParent );
 
-            daoUtil.setString( nIndex++, commentFilter.getLuteceUserName( ) );
-        }
+            if ( StringUtils.isNotEmpty( commentFilter.getLuteceUserName( ) ) )
+            {
 
-        daoUtil.executeQuery( );
-        while ( daoUtil.next( ) )
-        {
-            listComments.add( getCommentInfo( daoUtil ) );
+                daoUtil.setString( nIndex++, commentFilter.getLuteceUserName( ) );
+            }
+
+            daoUtil.executeQuery( );
+            while ( daoUtil.next( ) )
+            {
+                listComments.add( getCommentInfo( daoUtil ) );
+            }
         }
-        daoUtil.free( );
         return listComments;
     }
 
@@ -490,17 +495,17 @@ public class CommentDAO implements ICommentDAO
             sbSQL.append( SQL_AND ).append( SQL_FILTER_STATUS_PUBLISHED );
         }
 
-        DAOUtil daoUtil = new DAOUtil( sbSQL.toString( ), plugin );
-        daoUtil.setInt( nIndex++, nIdParent );
-        daoUtil.executeQuery( );
-
         int nResult = 0;
-        if ( daoUtil.next( ) )
+        try ( DAOUtil daoUtil = new DAOUtil( sbSQL.toString( ), plugin ) )
         {
-            nResult = daoUtil.getInt( 1 );
-        }
+            daoUtil.setInt( nIndex++, nIdParent );
+            daoUtil.executeQuery( );
 
-        daoUtil.free( );
+            if ( daoUtil.next( ) )
+            {
+                nResult = daoUtil.getInt( 1 );
+            }
+        }
 
         return nResult;
     }
@@ -521,18 +526,18 @@ public class CommentDAO implements ICommentDAO
             sbSQL.append( SQL_AND ).append( SQL_FILTER_STATUS_PUBLISHED );
         }
 
-        DAOUtil daoUtil = new DAOUtil( sbSQL.toString( ), plugin );
-        daoUtil.setString( nIndex++, strIdExtendableResource );
-        daoUtil.setString( nIndex++, strExtendableResourceType );
-        daoUtil.executeQuery( );
-
-        while ( daoUtil.next( ) )
+        try ( DAOUtil daoUtil = new DAOUtil( sbSQL.toString( ), plugin ) )
         {
-            int nIdComment = daoUtil.getInt( 1 );
-            listResult.add( nIdComment );
-        }
+            daoUtil.setString( nIndex++, strIdExtendableResource );
+            daoUtil.setString( nIndex++, strExtendableResourceType );
+            daoUtil.executeQuery( );
 
-        daoUtil.free( );
+            while ( daoUtil.next( ) )
+            {
+                int nIdComment = daoUtil.getInt( 1 );
+                listResult.add( nIdComment );
+            }
+        }
 
         return listResult;
     }
@@ -572,24 +577,24 @@ public class CommentDAO implements ICommentDAO
             sbSQL.append( CONSTANT_QUESTION_MARK );
         }
         int nIndex = 1;
-        DAOUtil daoUtil = new DAOUtil( sbSQL.toString( ), plugin );
-        daoUtil.setString( nIndex++, strExtendableResourceType );
-        if ( nMaxItemsNumber > 0 )
+        try ( DAOUtil daoUtil = new DAOUtil( sbSQL.toString( ), plugin ) )
         {
-            if ( nItemsOffset > 0 )
+            daoUtil.setString( nIndex++, strExtendableResourceType );
+            if ( nMaxItemsNumber > 0 )
             {
-                daoUtil.setInt( nIndex++, nItemsOffset );
+                if ( nItemsOffset > 0 )
+                {
+                    daoUtil.setInt( nIndex++, nItemsOffset );
+                }
+                daoUtil.setInt( nIndex++, nMaxItemsNumber );
             }
-            daoUtil.setInt( nIndex++, nMaxItemsNumber );
-        }
-        daoUtil.executeQuery( );
+            daoUtil.executeQuery( );
 
-        while ( daoUtil.next( ) )
-        {
-            listIds.add( daoUtil.getInt( 1 ) );
+            while ( daoUtil.next( ) )
+            {
+                listIds.add( daoUtil.getInt( 1 ) );
+            }
         }
-
-        daoUtil.free( );
 
         return listIds;
     }
@@ -693,9 +698,9 @@ public class CommentDAO implements ICommentDAO
 
         if ( StringUtils.isNotEmpty( commentFilter.getSortedAttributeName( ) ) )
         {
-            if ( StringUtils.equals( SQL_SORT_BY_DATE_CREATION, commentFilter.getSortedAttributeName( ) )
-                    || StringUtils.equals( SQL_SORT_BY_DATE_MODIFICATION, commentFilter.getSortedAttributeName( ) )
-                    || StringUtils.equals( SQL_SORT_BY_COMMENT_ORDER, commentFilter.getSortedAttributeName( ) ) )
+            if ( Strings.CS.equals( SQL_SORT_BY_DATE_CREATION, commentFilter.getSortedAttributeName( ) )
+                    || Strings.CS.equals( SQL_SORT_BY_DATE_MODIFICATION, commentFilter.getSortedAttributeName( ) )
+                    || Strings.CS.equals( SQL_SORT_BY_COMMENT_ORDER, commentFilter.getSortedAttributeName( ) ) )
             {
                 sbSQL.append( SQL_ORDER_BY ).append( commentFilter.getSortedAttributeName( ) );
             }
@@ -733,18 +738,18 @@ public class CommentDAO implements ICommentDAO
 
         // We now proceed the SQL request
         int nIndex = 1;
-        DAOUtil daoUtil = new DAOUtil( sbSQL.toString( ), plugin );
-        daoUtil.setString( nIndex++, strLuteceUserName );
-
-        daoUtil.executeQuery( );
-
-        // We fetch results
-        while ( daoUtil.next( ) )
+        try ( DAOUtil daoUtil = new DAOUtil( sbSQL.toString( ), plugin ) )
         {
-            listComments.add( getCommentInfo( daoUtil ) );
-        }
+            daoUtil.setString( nIndex++, strLuteceUserName );
 
-        daoUtil.free( );
+            daoUtil.executeQuery( );
+
+            // We fetch results
+            while ( daoUtil.next( ) )
+            {
+                listComments.add( getCommentInfo( daoUtil ) );
+            }
+        }
 
         return listComments;
     }

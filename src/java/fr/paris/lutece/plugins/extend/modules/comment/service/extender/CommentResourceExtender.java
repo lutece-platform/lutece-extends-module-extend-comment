@@ -35,12 +35,9 @@ package fr.paris.lutece.plugins.extend.modules.comment.service.extender;
 
 import fr.paris.lutece.plugins.extend.business.extender.ResourceExtenderDTO;
 import fr.paris.lutece.plugins.extend.modules.comment.business.config.CommentExtenderConfig;
-import fr.paris.lutece.plugins.extend.modules.comment.service.CommentService;
 import fr.paris.lutece.plugins.extend.modules.comment.service.ICommentService;
-import fr.paris.lutece.plugins.extend.modules.comment.util.constants.CommentConstants;
 import fr.paris.lutece.plugins.extend.service.extender.AbstractResourceExtender;
 import fr.paris.lutece.plugins.extend.service.extender.config.IResourceExtenderConfigService;
-import fr.paris.lutece.portal.service.i18n.I18nService;
 import fr.paris.lutece.plugins.extend.modules.comment.web.component.CommentResourceExtenderComponent;
 
 import jakarta.enterprise.context.ApplicationScoped;
@@ -52,8 +49,8 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 
-import java.util.Locale;
 
 /**
  *
@@ -77,7 +74,7 @@ public class CommentResourceExtender extends AbstractResourceExtender
     private ICommentService _commentService;
 
     @Inject
-    @ConfigProperty( name = "extend.comment.titleKey", defaultValue = "module.comment.rating.extender.rating.label" )
+    @ConfigProperty( name = "module.extend.comment.titleKey", defaultValue = "module.extend.comment.extender.comment.label" )
     private String titleKey;
 
     @Inject
@@ -93,7 +90,7 @@ public class CommentResourceExtender extends AbstractResourceExtender
     {
         setResourceExtenderComponent( resourceExtenderComponent );
         setKey( EXTENDABLE_RESOURCE_TYPE_COMMENT );
-        setI18nTitleKey( I18nService.getLocalizedString( titleKey, Locale.getDefault( ) ) );
+        setI18nTitleKey( titleKey );
         setConfigRequired( true );
         setHistoryEnable( true );
         setStateEnable( true );
@@ -120,7 +117,7 @@ public class CommentResourceExtender extends AbstractResourceExtender
     @Override
     public String getContent( String strIdExtendableResource, String strExtendableResourceType, String strParameters, HttpServletRequest request )
     {
-        if ( StringUtils.equals( EXTENDABLE_RESOURCE_TYPE_COMMENT, strExtendableResourceType ) )
+        if ( Strings.CS.equals( EXTENDABLE_RESOURCE_TYPE_COMMENT, strExtendableResourceType ) )
         {
             return StringUtils.EMPTY;
         }

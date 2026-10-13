@@ -35,12 +35,16 @@ package fr.paris.lutece.plugins.extend.modules.comment.service;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
+import jakarta.enterprise.context.Initialized;
+import jakarta.enterprise.event.Observes;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
+import jakarta.servlet.ServletContext;
 import jakarta.servlet.http.HttpServletRequest;
 
 import jakarta.transaction.Transactional;
@@ -54,8 +58,9 @@ import fr.paris.lutece.plugins.extend.modules.comment.business.config.CommentExt
 import fr.paris.lutece.plugins.extend.modules.comment.service.extender.CommentResourceExtender;
 import fr.paris.lutece.plugins.extend.modules.comment.util.constants.CommentConstants;
 import fr.paris.lutece.plugins.extend.service.extender.IResourceExtenderService;
-import fr.paris.lutece.plugins.extend.service.extender.ResourceExtenderService;
 import fr.paris.lutece.plugins.extend.service.extender.config.IResourceExtenderConfigService;
+import fr.paris.lutece.plugins.extend.service.extender.facade.ExtenderType;
+import fr.paris.lutece.plugins.extend.service.extender.facade.ResourceExtenderServiceFacade;
 import fr.paris.lutece.plugins.workflowcore.exception.ResourceWorkflowLockedException;
 import fr.paris.lutece.portal.service.i18n.I18nService;
 import fr.paris.lutece.portal.service.plugin.Plugin;
@@ -85,12 +90,31 @@ public class CommentService implements ICommentService
     @Named( "extend-comment.commentExtenderConfigService" )
     private IResourceExtenderConfigService _configService;
 
+    @Inject
+    private WorkflowService _workflowService;
+
+    /**
+     * Registers the comment extender type with the extend facade when the application starts: the comments of one or
+     * several resources, and the number of published parent comments of a resource for export and recap.
+     *
+     * @param context
+     *            the servlet context
+     */
+    public void registerExtenderType( @Observes @Initialized( ApplicationScoped.class ) ServletContext context )
+    {
+        ResourceExtenderServiceFacade.addExtenderType( new ExtenderType<>( Comment.class, CommentResourceExtender.EXTENDER_TYPE_COMMENT,
+                ( strIdExtendableResource, strExtendableResourceType ) -> findByListResource( Collections.singletonList( strIdExtendableResource ),
+                        strExtendableResourceType ),
+                this::findByListResource,
+                ( strIdExtendableResource, strExtendableResourceType ) -> String.valueOf( getCommentNb( strIdExtendableResource, strExtendableResourceType, true, true ) ),
+                ( strIdExtendableResource, strExtendableResourceType ) -> String.valueOf( getCommentNb( strIdExtendableResource, strExtendableResourceType, true, true ) ) ) );
+    }
+
     /**
      * {@inheritDoc}
      */
     @Override
-    @Transactional
-    public synchronized void create( Comment comment, HttpServletRequest request )
+    public void create( Comment comment, HttpServletRequest request )
     {
         Timestamp currentTimestamp = new Timestamp( new Date( ).getTime( ) );
         comment.setDateComment( currentTimestamp );
@@ -110,8 +134,7 @@ public class CommentService implements ICommentService
      * {@inheritDoc}
      */
     @Override
-    @Transactional
-    public synchronized void create( Comment comment )
+    public void create( Comment comment )
     {
         Timestamp currentTimestamp = new Timestamp( new Date( ).getTime( ) );
         comment.setDateComment( currentTimestamp );
@@ -159,10 +182,13 @@ public class CommentService implements ICommentService
      * {@inheritDoc}
      */
     @Override
-    @Transactional
     public void remove( int nIdComment )
     {
         Comment comment = findByPrimaryKey( nIdComment );
+        if ( comment == null )
+        {
+            return;
+        }
         if ( CommentListenerService.hasListener( ) )
         {
 
@@ -170,10 +196,10 @@ public class CommentService implements ICommentService
             listIdRemovedComments.add( nIdComment );
             CommentListenerService.deleteComment( comment.getExtendableResourceType( ), comment.getIdExtendableResource( ), listIdRemovedComments );
         }
-        if ( WorkflowService.getInstance( ).isAvailable( ) )
+        if ( _workflowService.isAvailable( ) )
         {
             String resourceType = getResourceType( comment.getExtendableResourceType( ) );
-            WorkflowService.getInstance( ).doRemoveWorkFlowResource( nIdComment, resourceType );
+            _workflowService.doRemoveWorkFlowResource( nIdComment, resourceType );
 
         }
         _commentDAO.delete( nIdComment, CommentPlugin.getPlugin( ) );
@@ -183,7 +209,6 @@ public class CommentService implements ICommentService
      * {@inheritDoc}
      */
     @Override
-    @Transactional
     public void removeByResource( String strIdExtendableResource, String strExtendableResourceType )
     {
         List<Integer> listRemovedComments = findIdsByResource( strIdExtendableResource, strExtendableResourceType, false );
@@ -192,13 +217,13 @@ public class CommentService implements ICommentService
 
             CommentListenerService.deleteComment( strExtendableResourceType, strIdExtendableResource, listRemovedComments );
         }
-        if ( WorkflowService.getInstance( ).isAvailable( ) )
+        if ( _workflowService.isAvailable( ) )
         {
             String resourceType = getResourceType( strExtendableResourceType );
             for ( int nIdComment : listRemovedComments )
             {
 
-                WorkflowService.getInstance( ).doRemoveWorkFlowResource( nIdComment, resourceType );
+                _workflowService.doRemoveWorkFlowResource( nIdComment, resourceType );
 
             }
             // WorkflowService.getInstance( ).doRemoveWorkFlowResourceByListId(listRemovedComments, resourceType , id_wf);
@@ -467,8 +492,8 @@ public class CommentService implements ICommentService
         if ( comment != null )
         {
             comment.setIsImportant( bImportant );
+            _commentDAO.store( comment, plugin );
         }
-        _commentDAO.store( comment, plugin );
     }
 
     @Override
@@ -496,9 +521,8 @@ public class CommentService implements ICommentService
                 }
                 comment.setCommentOrder( nOrder );
             }
-
+            _commentDAO.store( comment, plugin );
         }
-        _commentDAO.store( comment, plugin );
     }
 
     private void processWorkflow( Comment comment )
@@ -512,18 +536,21 @@ public class CommentService implements ICommentService
         filter.setIncludeWildcardResource( true );
 
         List<ResourceExtenderDTO> listResourceExtender = _resourceExtenderService.findByFilter( filter );
+        if ( listResourceExtender.isEmpty( ) )
+        {
+            return;
+        }
         int nIdExtendable = listResourceExtender.get( 0 ).getIdExtender( );
 
         CommentExtenderConfig config = (CommentExtenderConfig) _configService.find( nIdExtendable );
-        int idWorkflow = config.getIdWorkflow( );
-        if ( idWorkflow > 0 )
+        if ( config != null && config.getIdWorkflow( ) > 0 )
         {
 
-            WorkflowService.getInstance( ).getState( comment.getIdComment( ), resourceType, idWorkflow, nIdExtendable );
+            _workflowService.getState( comment.getIdComment( ), resourceType, config.getIdWorkflow( ), nIdExtendable );
 
             try
             {
-                WorkflowService.getInstance( ).executeActionAutomatic( comment.getIdComment( ), resourceType, idWorkflow, nIdExtendable );
+                _workflowService.executeActionAutomatic( comment.getIdComment( ), resourceType, config.getIdWorkflow( ), nIdExtendable, null );
             }
             catch( AppException e )
             {

@@ -33,25 +33,15 @@
  */
 package fr.paris.lutece.plugins.extend.modules.comment.service;
 
-import java.util.Arrays;
-
-import fr.paris.lutece.plugins.extend.modules.comment.business.Comment;
-import fr.paris.lutece.plugins.extend.modules.comment.service.extender.CommentResourceExtender;
-import fr.paris.lutece.plugins.extend.service.extender.facade.ExtenderType;
-import fr.paris.lutece.plugins.extend.service.extender.facade.ResourceExtenderServiceFacade;
 import fr.paris.lutece.portal.service.plugin.Plugin;
 import fr.paris.lutece.portal.service.plugin.PluginDefaultImplementation;
 import fr.paris.lutece.portal.service.plugin.PluginService;
-
-import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.enterprise.inject.spi.CDI;
 
 /**
  *
  * CommentPlugin
  *
  */
-@ApplicationScoped
 public class CommentPlugin extends PluginDefaultImplementation
 {
     /** The Constant PLUGIN_NAME. */
@@ -68,11 +58,5 @@ public class CommentPlugin extends PluginDefaultImplementation
     public static Plugin getPlugin( )
     {
         return PluginService.getPlugin( PLUGIN_NAME );
-    }
-    
-    @Override
-    public void init( )
-    {
-
     }
 }

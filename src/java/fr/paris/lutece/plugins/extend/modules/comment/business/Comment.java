@@ -38,15 +38,16 @@ import java.sql.Timestamp;
 import java.util.Collection;
 import java.util.List;
 
+import jakarta.enterprise.inject.spi.CDI;
 import jakarta.validation.constraints.NotNull;
 
 import org.apache.commons.lang3.StringUtils;
 
-import fr.paris.lutece.plugins.extend.modules.comment.service.CommentAvatarService;
+import fr.paris.lutece.plugins.extend.modules.comment.service.ICommentAvatarService;
 import fr.paris.lutece.plugins.extend.modules.comment.util.annotation.Email;
 import fr.paris.lutece.plugins.extend.service.extender.facade.IExtendableResourceResult;
 import fr.paris.lutece.plugins.workflowcore.business.action.Action;
-import fr.paris.lutece.portal.service.editor.EditorBbcodeService;
+import fr.paris.lutece.portal.service.editor.IEditorBbcodeService;
 import fr.paris.lutece.portal.service.security.RsaService;
 import fr.paris.lutece.portal.service.util.AppLogService;
 
@@ -235,7 +236,7 @@ public class Comment implements IExtendableResourceResult
     {
         try
         {
-            return EditorBbcodeService.getInstance( ).parse( _strComment );
+            return CDI.current( ).select( IEditorBbcodeService.class ).get( ).parse( _strComment );
         }
         catch( Exception e )
         {
@@ -425,7 +426,7 @@ public class Comment implements IExtendableResourceResult
      */
     public String getAvatar( )
     {
-        return CommentAvatarService.getInstance( ).getAvatar( this );
+        return CDI.current( ).select( ICommentAvatarService.class ).get( ).getAvatar( this );
     }
 
     /**
@@ -435,7 +436,7 @@ public class Comment implements IExtendableResourceResult
      */
     public String getAvatarUrl( )
     {
-        return CommentAvatarService.getInstance( ).getAvatarUrl( this );
+        return CDI.current( ).select( ICommentAvatarService.class ).get( ).getAvatarUrl( this );
     }
 
     /**

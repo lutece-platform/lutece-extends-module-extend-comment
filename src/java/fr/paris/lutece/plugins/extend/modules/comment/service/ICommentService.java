@@ -39,8 +39,6 @@ import java.util.Locale;
 
 import jakarta.servlet.http.HttpServletRequest;
 
-import jakarta.transaction.Transactional;
-
 import fr.paris.lutece.plugins.extend.modules.comment.business.Comment;
 import fr.paris.lutece.plugins.extend.modules.comment.business.CommentFilter;
 import fr.paris.lutece.portal.service.plugin.Plugin;
@@ -57,7 +55,6 @@ public interface ICommentService
      * @param nIdComment
      *            the n id comment
      */
-    @Transactional
     void remove( int nIdComment );
 
     /**
@@ -68,7 +65,6 @@ public interface ICommentService
      * @param strExtendableResourceType
      *            the str extendable resource type
      */
-    @Transactional
     void removeByResource( String strIdExtendableResource, String strExtendableResourceType );
 
     /**
@@ -77,7 +73,6 @@ public interface ICommentService
      * @param comment
      *            the comment
      */
-    @Transactional
     void create( Comment comment );
 
     /**
@@ -88,7 +83,6 @@ public interface ICommentService
      * @param request
      *            the HTTP request
      */
-    @Transactional
     void create( Comment comment, HttpServletRequest request );
 
     /**
@@ -97,7 +91,6 @@ public interface ICommentService
      * @param comment
      *            the comment
      */
-    @Transactional
     void update( Comment comment );
 
     /**
@@ -108,7 +101,6 @@ public interface ICommentService
      * @param bPublished
      *            the b published
      */
-    @Transactional
     void updateCommentStatus( int nIdComment, boolean bPublished );
 
     /**
@@ -119,7 +111,6 @@ public interface ICommentService
      * @param bImportant
      *            true if the comment is important
      */
-    @Transactional
     void updateFlagImportant( int nIdComment, boolean bImportant );
 
     /**
@@ -130,7 +121,6 @@ public interface ICommentService
      * @param bPinned
      *            true if the comment must be pinned
      */
-    @Transactional
     void updateCommentPinned( int nIdComment, boolean bPinned );
 
     /**

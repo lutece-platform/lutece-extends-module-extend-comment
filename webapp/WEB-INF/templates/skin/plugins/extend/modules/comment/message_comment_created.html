@@ -1,12 +1,17 @@
-<div class="col-xs-12 col-sm-12 col-md-9 col-lg-9" style="min-height:550px;padding-top:100px;">
-	<div class="alert">
-		<br />
-		${message_comment_created}
-		<br />
-		<div>
-			<a class="btn btn-sm" href="<#if (returnToCommentList?? && returnToCommentList) || !(from_url??)>${postBackUrl}<#if postBackUrl?contains('?')>&<#else>?</#if>idExtendableResource=${idExtendableResource}&extendableResourceType=${extendableResourceType}&idComment=${idComment!}&from_url=from_session<#if idComment??>#comment_${idComment!}</#if><#else>${from_url}</#if>" title="#i18n{portal.util.labelBack}">
-				<i class="glyphicon glyphicon-remove-circle">&nbsp;</i>&nbsp;#i18n{portal.util.labelBack}
-			</a>
-		</div>
-	</div>
-</div>
+<@cTpl>
+<@cContainer>
+<@cRow>
+	<@cCol>
+		<@cAlert type='success'>${message_comment_created!}</@cAlert>
+		<#if (returnToCommentList?? && returnToCommentList) || !(from_url??)>
+			<#assign backUrl>${postBackUrl}<#if postBackUrl?contains('?')>&amp;<#else>?</#if>idExtendableResource=${idExtendableResource}&amp;extendableResourceType=${extendableResourceType}&amp;idComment=${idComment!}&amp;from_url=from_session<#if idComment??>#comment_${idComment!}</#if></#assign>
+		<#else>
+			<#assign backUrl = from_url>
+		</#if>
+		<@cBtn label='#i18n{portal.util.labelBack}' class='secondary btn-sm' href=backUrl>
+			<@cIcon name='arrow-left' />
+		</@cBtn>
+	</@cCol>
+</@cRow>
+</@cContainer>
+</@cTpl>
