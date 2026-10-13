@@ -44,11 +44,15 @@ import fr.paris.lutece.plugins.extend.modules.comment.service.ICommentService;
 import fr.paris.lutece.portal.service.dashboard.IPublicDashboardComponent;
 import fr.paris.lutece.portal.service.i18n.I18nService;
 
-import jakarta.enterprise.inject.spi.CDI;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
 
 /**
  * The Class PublicDashboardComment.
  */
+@ApplicationScoped
+@Named( "extend-comment.PublicDashboardComment" )
 public class PublicDashboardComment implements IPublicDashboardComponent
 {
 
@@ -56,6 +60,9 @@ public class PublicDashboardComment implements IPublicDashboardComponent
 	private String strIdComponent = "extend-comment.PublicDashboardComment";
 	private static final String TEMPLATE_DASHBOARD_COMMENTS = "/skin/plugins/extend/modules/comment/publicdashboard_comments.html";
 	private static final String MARK_DASHBOARD_COMMENTS = "comments_publidashboard";
+
+	@Inject
+	private ICommentService _commentService;
 
 	@Override
 	public String getComponentDescription( Locale locale ) {
@@ -88,13 +95,9 @@ public class PublicDashboardComment implements IPublicDashboardComponent
      * @param user_id the user_id
      * @return the list
      */
-    private static List<Comment> searchCommentUser( String user_id )
+    private List<Comment> searchCommentUser( String user_id )
     {
-
-        ICommentService commService = CDI.current().select(ICommentService.class).get();
-        List<Comment> lstComment = commService.findCommentsByLuteceUser( user_id );
-
-        return lstComment;
+        return _commentService.findCommentsByLuteceUser( user_id );
     }
 
 	

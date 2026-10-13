@@ -39,331 +39,167 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import jakarta.enterprise.context.RequestScoped;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
 import jakarta.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 
 import fr.paris.lutece.plugins.extend.business.extender.ResourceExtenderDTO;
 import fr.paris.lutece.plugins.extend.business.extender.ResourceExtenderDTOFilter;
 import fr.paris.lutece.plugins.extend.modules.comment.business.Comment;
 import fr.paris.lutece.plugins.extend.modules.comment.service.CommentPlugin;
-import fr.paris.lutece.plugins.extend.modules.comment.service.CommentService;
 import fr.paris.lutece.plugins.extend.modules.comment.service.ICommentService;
 import fr.paris.lutece.plugins.extend.modules.comment.service.extender.CommentResourceExtender;
+import fr.paris.lutece.plugins.extend.modules.comment.util.CommentUtils;
 import fr.paris.lutece.plugins.extend.modules.comment.util.constants.CommentConstants;
 import fr.paris.lutece.plugins.extend.service.extender.IResourceExtenderService;
-import fr.paris.lutece.plugins.extend.service.extender.ResourceExtenderService;
-import fr.paris.lutece.plugins.extend.service.extender.config.IResourceExtenderConfigService;
 import fr.paris.lutece.plugins.extend.service.extender.history.IResourceExtenderHistoryService;
-import fr.paris.lutece.plugins.extend.service.extender.history.ResourceExtenderHistoryService;
+import fr.paris.lutece.plugins.extend.web.ResourceExtenderJspBean;
+import fr.paris.lutece.api.user.User;
+import fr.paris.lutece.plugins.extend.modules.comment.business.config.CommentExtenderConfig;
+import fr.paris.lutece.plugins.extend.service.extender.config.IResourceExtenderConfigService;
 import fr.paris.lutece.plugins.workflowcore.exception.ResourceWorkflowLockedException;
 import fr.paris.lutece.portal.business.user.AdminUser;
-import fr.paris.lutece.portal.service.admin.AdminUserService;
+import fr.paris.lutece.portal.service.i18n.I18nService;
 import fr.paris.lutece.portal.service.message.AdminMessage;
 import fr.paris.lutece.portal.service.message.AdminMessageService;
-import fr.paris.lutece.portal.service.template.AppTemplateService;
 import fr.paris.lutece.portal.service.util.AppException;
 import fr.paris.lutece.portal.service.util.AppLogService;
 import fr.paris.lutece.portal.service.util.AppPathService;
 import fr.paris.lutece.portal.service.workflow.WorkflowService;
-import fr.paris.lutece.portal.web.admin.PluginAdminPageJspBean;
+import fr.paris.lutece.portal.util.mvc.admin.MVCAdminJspBean;
+import fr.paris.lutece.portal.util.mvc.admin.annotations.Controller;
+import fr.paris.lutece.portal.util.mvc.commons.annotations.Action;
+import fr.paris.lutece.portal.util.mvc.commons.annotations.View;
+import fr.paris.lutece.portal.web.cdi.mvc.Models;
 import fr.paris.lutece.portal.web.constants.Messages;
-import fr.paris.lutece.util.html.HtmlTemplate;
 import fr.paris.lutece.util.http.SecurityUtil;
 import fr.paris.lutece.util.url.UrlItem;
 
-import jakarta.inject.Inject;
-import jakarta.enterprise.context.SessionScoped;
-import jakarta.inject.Named;
-
-import jakarta.enterprise.inject.spi.CDI;
-
 /**
- * 
- * CommentJspBean
- * 
+ * Back office controller of the comments of a resource.
  */
-@SessionScoped
-@Named
-public class CommentJspBean extends PluginAdminPageJspBean
+@RequestScoped
+@Named( "extendCommentJspBean" )
+@Controller( controllerJsp = "ManageComments.jsp", controllerPath = "jsp/admin/plugins/extend/modules/comment/", right = ResourceExtenderJspBean.RIGHT_MANAGE_RESOURCE_EXTENDER, securityTokenEnabled = true )
+public class CommentJspBean extends MVCAdminJspBean
 {
-    /**
-     * Serial version UID
-     */
     private static final long serialVersionUID = -1787559203779077088L;
 
-    // JSP
-    private static final String JSP_VIEW_EXTENDER_INFO = "../../ViewExtenderInfo.jsp";
-    private static final String JSP_URL_DO_REMOVE_COMMENT = "jsp/admin/plugins/extend/modules/comment/DoRemoveComment.jsp";
-    private static final String JSP_VIEW_TASKS_FORM = "../comment/GetTasksFormWorkflow.jsp";
-    
-    // MESSAGES
-    private static final String MESSAGE_MANDATORY_FIELD = "portal.util.message.mandatoryField";
-    private static final String MESSAGE_TITLE_CREATE_COMMENT = "module.extend.comment.create_comment.pageTitle";
+    private static final String VIEW_CREATE_COMMENT = "createComment";
+    private static final String VIEW_CONFIRM_REMOVE_COMMENT = "confirmRemoveComment";
+    private static final String VIEW_TASKS_FORM_WORKFLOW = "tasksFormWorkflow";
+    private static final String VIEW_CONFIRM_UPDATE_COMMENT = "confirmUpdateComment";
 
-    // TEMPLATE
+    private static final String ACTION_CREATE_COMMENT = "createComment";
+    private static final String ACTION_REMOVE_COMMENT = "removeComment";
+    private static final String ACTION_SAVE_TASK_FORM = "saveTaskForm";
+
+    private static final String JSP_VIEW_EXTENDER_INFO = "../../ViewExtenderInfo.jsp";
+
+    private static final String MESSAGE_TITLE_CREATE_COMMENT = "module.extend.comment.create_comment.pageTitle";
+    private static final String MESSAGE_CONFIRM_UPDATE_COMMENT = "module.extend.comment.message.confirm.updateComment";
+    private static final String MESSAGE_TITLE_TASKS_FORM_WORKFLOW = "module.extend.comment.comment_task_form_workflow.page_title";
+
     private static final String TEMPLATE_CREATE_COMMENT = "admin/plugins/extend/modules/comment/create_comment.html";
-    private static final String TEMPLATE_TASKS_FORM_WORKFLOW  = "admin/plugins/extend/modules/comment/tasks_form_workflow.html";
-    
-    // MARKS
+    private static final String TEMPLATE_TASKS_FORM_WORKFLOW = "admin/plugins/extend/modules/comment/tasks_form_workflow.html";
+
     private static final String MARK_TASK_FORM = "tasks_form";
-    
-    // CONSTANT
+
     private static final String CONSTANT_SPACE = " ";
 
-    private ICommentService _commentService = CDI.current().select( ICommentService.class ).get();
+    private static final Map<String, String> MAP_OPERATION_LABELS = Map.of( CommentConstants.OPERATION_PUBLISH, "module.extend.comment.comment_info.buttonPublish",
+            CommentConstants.OPERATION_UNPUBLISH, "module.extend.comment.comment_info.buttonUnpublish", CommentConstants.OPERATION_FLAG_IMPORTANT,
+            "module.extend.comment.comment_info.labelDoFlagImportant", CommentConstants.OPERATION_CANCEL_FLAG_IMPORTANT,
+            "module.extend.comment.comment_info.labelCancelFlagImportant", CommentConstants.OPERATION_PIN, "module.extend.comment.comment_info.labelDoPinned",
+            CommentConstants.OPERATION_CANCEL_PIN, "module.extend.comment.comment_info.labelCancelPinned" );
 
-    private IResourceExtenderHistoryService _resourceHistoryService = CDI.current().select( IResourceExtenderHistoryService.class ).get();
+    @Inject
+    private ICommentService _commentService;
 
-    private IResourceExtenderService _resourceExtenderService = CDI.current().select( IResourceExtenderService.class ).get();
+    @Inject
+    private IResourceExtenderHistoryService _resourceHistoryService;
 
-    
+    @Inject
+    private IResourceExtenderService _resourceExtenderService;
+
+    @Inject
+    private WorkflowService _workflowService;
+
+    @Inject
+    @Named( "extend-comment.commentExtenderConfigService" )
+    private IResourceExtenderConfigService _configService;
+
     /**
-     * Do publish unpublish comment.
-     * 
+     * Displays the comment creation form.
+     *
      * @param request
      *            the request
-     * @return the string
+     * @param model
+     *            the model
+     * @return the page
      */
-    public String doPublishUnpublishComment( HttpServletRequest request )
+    @View( value = VIEW_CREATE_COMMENT, defaultView = true )
+    public String getCreateComment( HttpServletRequest request, Models model )
     {
-        String strIdComment = request.getParameter( CommentConstants.PARAMETER_ID_COMMENT );
-
-        if ( StringUtils.isNotBlank( strIdComment ) && StringUtils.isNumeric( strIdComment ) )
-        {
-            int nIdComment = Integer.parseInt( strIdComment );
-            Comment comment = _commentService.findByPrimaryKey( nIdComment );
-
-            if ( comment != null )
-            {
-                try
-                {
-                    _commentService.updateCommentStatus( comment.getIdComment( ), !comment.isPublished( ) );
-                }
-                catch( Exception ex )
-                {
-                    // Something wrong happened... a database check might be needed
-                    AppLogService.error( ex.getMessage( ) + " when updating a comment", ex );
-
-                    return AdminMessageService.getMessageUrl( request, CommentConstants.MESSAGE_ERROR_GENERIC_MESSAGE, AdminMessage.TYPE_ERROR );
-                }
-
-                return getPostBackUrl( request, comment );
-            }
-        }
-
-        return AdminMessageService.getMessageUrl( request, Messages.MANDATORY_FIELDS, AdminMessage.TYPE_STOP );
-    }
-
-    /**
-     * Do flag comment as important
-     * 
-     * @param request
-     *            the request
-     * @param cancelFlag
-     *            true if the flag important of the comment must be cancel
-     * @return the string
-     */
-    public String doFlagImportantComment( HttpServletRequest request, boolean cancelFlag )
-    {
-        String strIdComment = request.getParameter( CommentConstants.PARAMETER_ID_COMMENT );
-
-        if ( StringUtils.isNotBlank( strIdComment ) && StringUtils.isNumeric( strIdComment ) )
-        {
-            int nIdComment = Integer.parseInt( strIdComment );
-            Comment comment = _commentService.findByPrimaryKey( nIdComment );
-
-            if ( comment != null )
-            {
-                try
-                {
-                    _commentService.updateFlagImportant( comment.getIdComment( ), !cancelFlag );
-                }
-                catch( Exception ex )
-                {
-                    // Something wrong happened... a database check might be needed
-                    AppLogService.error( ex.getMessage( ) + " when updating a comment", ex );
-
-                    return AdminMessageService.getMessageUrl( request, CommentConstants.MESSAGE_ERROR_GENERIC_MESSAGE, AdminMessage.TYPE_ERROR );
-                }
-
-                return getPostBackUrl( request, comment );
-            }
-        }
-
-        return AdminMessageService.getMessageUrl( request, Messages.MANDATORY_FIELDS, AdminMessage.TYPE_STOP );
-    }
-
-    /**
-     * Do pinned a comment.
-     * 
-     * @param request
-     *            the request
-     * @param cancelPinned
-     *            true if the comment must be unpinned
-     * @return the string
-     */
-    public String doPinned( HttpServletRequest request, boolean cancelPinned )
-    {
-        String strIdComment = request.getParameter( CommentConstants.PARAMETER_ID_COMMENT );
-
-        if ( StringUtils.isNotBlank( strIdComment ) && StringUtils.isNumeric( strIdComment ) )
-        {
-            int nIdComment = Integer.parseInt( strIdComment );
-            Comment comment = _commentService.findByPrimaryKey( nIdComment );
-
-            if ( comment != null )
-            {
-                try
-                {
-                    _commentService.updateCommentPinned( nIdComment, !cancelPinned );
-                }
-                catch( Exception ex )
-                {
-                    // Something wrong happened... a database check might be needed
-                    AppLogService.error( ex.getMessage( ) + " when updating a comment", ex );
-
-                    return AdminMessageService.getMessageUrl( request, CommentConstants.MESSAGE_ERROR_GENERIC_MESSAGE, AdminMessage.TYPE_ERROR );
-                }
-
-                return getPostBackUrl( request, comment );
-            }
-        }
-
-        return AdminMessageService.getMessageUrl( request, Messages.MANDATORY_FIELDS, AdminMessage.TYPE_STOP );
-    }
-
-    /**
-     * Gets the confirm remove comment.
-     * 
-     * @param request
-     *            the request
-     * @return the confirm remove comment
-     */
-    public String getConfirmRemoveComment( HttpServletRequest request )
-    {
-        UrlItem url = new UrlItem( JSP_URL_DO_REMOVE_COMMENT );
-        url.addParameter( CommentConstants.PARAMETER_ID_COMMENT, request.getParameter( CommentConstants.PARAMETER_ID_COMMENT ) );
-        url.addParameter( CommentConstants.PARAMETER_FROM_URL, StringUtils.replace( request.getParameter( CommentConstants.PARAMETER_FROM_URL ),
-                CommentConstants.CONSTANT_AND, CommentConstants.CONSTANT_AND_HTML ) );
-        addViewResourceInUrl( request, url );
-
-        return AdminMessageService.getMessageUrl( request, CommentConstants.MESSAGE_CONFIRM_REMOVE_COMMENT, url.getUrl( ), AdminMessage.TYPE_CONFIRMATION );
-    }
-
-    /**
-     * Do remove comment.
-     * 
-     * @param request
-     *            the request
-     * @return the string
-     */
-    public String doRemoveComment( HttpServletRequest request )
-    {
-        String strIdComment = request.getParameter( CommentConstants.PARAMETER_ID_COMMENT );
-
-        if ( StringUtils.isNotBlank( strIdComment ) && StringUtils.isNumeric( strIdComment ) )
-        {
-            int nIdComment = Integer.parseInt( strIdComment );
-            Comment comment = _commentService.findByPrimaryKey( nIdComment );
-
-            if ( comment != null )
-            {
-                try
-                {
-                    _commentService.remove( nIdComment );
-                }
-                catch( Exception ex )
-                {
-                    // Something wrong happened... a database check might be needed
-                    AppLogService.error( ex.getMessage( ) + " when updating a comment", ex );
-
-                    return AdminMessageService.getMessageUrl( request, CommentConstants.MESSAGE_ERROR_GENERIC_MESSAGE, AdminMessage.TYPE_ERROR );
-                }
-
-                return getPostBackUrl( request, comment );
-            }
-        }
-
-        return AdminMessageService.getMessageUrl( request, Messages.MANDATORY_FIELDS, AdminMessage.TYPE_STOP );
-    }
-
-    /**
-     * Get the comment creation page
-     * 
-     * @param request
-     *            The request
-     * @return The HTML content to display
-     */
-    public String getCreateComment( HttpServletRequest request )
-    {
-        setPageTitleProperty( MESSAGE_TITLE_CREATE_COMMENT );
-
-        String strExtendableResourceType = request.getParameter( CommentConstants.PARAMETER_EXTENDABLE_RESOURCE_TYPE );
-        String strIdExtendableResource = request.getParameter( CommentConstants.PARAMETER_ID_EXTENDABLE_RESOURCE );
-        String strIdParentComment = request.getParameter( CommentConstants.PARAMETER_ID_COMMENT );
         String strViewAllResources = request.getParameter( CommentConstants.PARAMETER_VIEW_ALL_RESOURCES );
+        AdminUser user = getUser( );
 
-        AdminUser user = AdminUserService.getAdminUser( request );
-
-        Map<String, Object> model = new HashMap<String, Object>( );
-        model.put( CommentConstants.MARK_ALL_RESOURCES, !StringUtils.isEmpty( strViewAllResources ) && new Boolean( strViewAllResources ) );
-        model.put( CommentConstants.MARK_EXTENDABLE_RESOURCE_TYPE, strExtendableResourceType );
-        model.put( CommentConstants.MARK_ID_EXTENDABLE_RESOURCE, strIdExtendableResource );
-        model.put( CommentConstants.PARAMETER_ID_COMMENT, strIdParentComment );
+        model.put( CommentConstants.MARK_ALL_RESOURCES, StringUtils.isNotEmpty( strViewAllResources ) && Boolean.parseBoolean( strViewAllResources ) );
+        model.put( CommentConstants.MARK_EXTENDABLE_RESOURCE_TYPE, request.getParameter( CommentConstants.PARAMETER_EXTENDABLE_RESOURCE_TYPE ) );
+        model.put( CommentConstants.MARK_ID_EXTENDABLE_RESOURCE, request.getParameter( CommentConstants.PARAMETER_ID_EXTENDABLE_RESOURCE ) );
+        model.put( CommentConstants.PARAMETER_ID_COMMENT, request.getParameter( CommentConstants.PARAMETER_ID_COMMENT ) );
         model.put( CommentConstants.PARAMETER_NAME, user.getFirstName( ) + CONSTANT_SPACE + user.getLastName( ).toUpperCase( ) );
         model.put( CommentConstants.MARK_WEBAPP_URL, AppPathService.getBaseUrl( request ) );
-        model.put( CommentConstants.MARK_LOCALE, AdminUserService.getLocale( request ) );
-        model.put( CommentConstants.PARAMETER_FROM_URL, StringUtils.replace( request.getParameter( CommentConstants.PARAMETER_FROM_URL ),
-                CommentConstants.CONSTANT_AND, CommentConstants.CONSTANT_AND_HTML ) );
-        HtmlTemplate template = AppTemplateService.getTemplate( TEMPLATE_CREATE_COMMENT, AdminUserService.getLocale( request ), model );
+        model.put( CommentConstants.MARK_LOCALE, getLocale( ) );
+        model.put( CommentConstants.PARAMETER_FROM_URL, getFromUrl( request ) );
 
-        return getAdminPage( template.getHtml( ) );
+        return getPage( MESSAGE_TITLE_CREATE_COMMENT, TEMPLATE_CREATE_COMMENT, model );
     }
 
     /**
-     * Do create a comment
-     * 
+     * Creates a comment written by the administrator.
+     *
      * @param request
-     *            The request
-     * @return The URL to redirect to
+     *            the request
+     * @return the redirection
      */
+    @Action( ACTION_CREATE_COMMENT )
     public String doCreateComment( HttpServletRequest request )
     {
         String strExtendableResourceType = request.getParameter( CommentConstants.PARAMETER_EXTENDABLE_RESOURCE_TYPE );
         String strIdExtendableResource = request.getParameter( CommentConstants.PARAMETER_ID_EXTENDABLE_RESOURCE );
         String strIdParentComment = request.getParameter( CommentConstants.PARAMETER_ID_COMMENT );
         String strName = request.getParameter( CommentConstants.PARAMETER_NAME );
-
         String strComment = request.getParameter( CommentConstants.MARK_COMMENT );
+
         if ( StringUtils.isEmpty( strComment ) || StringUtils.isEmpty( strName ) )
         {
-            return AdminMessageService.getMessageUrl( request, MESSAGE_MANDATORY_FIELD, AdminMessage.TYPE_STOP );
+            return redirect( request, AdminMessageService.getMessageUrl( request, Messages.MANDATORY_FIELDS, AdminMessage.TYPE_STOP ) );
         }
 
         int nIdParentComment = 0;
-        if ( StringUtils.isNotEmpty( strIdParentComment ) && StringUtils.isNumeric( strIdParentComment ) )
+        if ( StringUtils.isNumeric( strIdParentComment ) )
         {
             nIdParentComment = Integer.parseInt( strIdParentComment );
-            // We check that the parent has no parent. If it has one, then we use it instead
-            if ( nIdParentComment > 0 )
+            Comment parentComment = nIdParentComment > 0 ? _commentService.findByPrimaryKey( nIdParentComment ) : null;
+            if ( parentComment != null && parentComment.getIdParentComment( ) > 0 )
             {
-                Comment parrentComment = _commentService.findByPrimaryKey( nIdParentComment );
-                // If the parent has a parent
-                if ( parrentComment.getIdParentComment( ) > 0 )
-                {
-                    nIdParentComment = parrentComment.getIdParentComment( );
-                }
+                nIdParentComment = parentComment.getIdParentComment( );
             }
         }
-        AdminUser user = AdminUserService.getAdminUser( request );
+
+        AdminUser user = getUser( );
+        Timestamp currentDate = new Timestamp( new Date( ).getTime( ) );
 
         Comment comment = new Comment( );
         comment.setIdExtendableResource( strIdExtendableResource );
         comment.setExtendableResourceType( strExtendableResourceType );
         comment.setIdParentComment( nIdParentComment );
         comment.setComment( strComment );
-        Timestamp currentDate = new Timestamp( new Date( ).getTime( ) );
         comment.setDateComment( currentDate );
         comment.setDateLastModif( currentDate );
         comment.setName( strName );
@@ -372,16 +208,462 @@ public class CommentJspBean extends PluginAdminPageJspBean
         comment.setIpAddress( SecurityUtil.getRealIp( request ) );
         comment.setIsAdminComment( true );
 
-        _commentService.create( comment, request );
-        _resourceHistoryService.create( CommentResourceExtender.EXTENDER_TYPE_COMMENT, strIdExtendableResource, strExtendableResourceType, request );
+        try
+        {
+            _commentService.create( comment, request );
+        }
+        catch( Exception ex )
+        {
+            AppLogService.error( "{} when creating a comment", ex.getMessage( ), ex );
+            if ( comment.getIdComment( ) > 0 )
+            {
+                _commentService.remove( comment.getIdComment( ) );
+            }
 
-        // we redirect the user to the manage comment page
-        String strPostBackUrl = (String) request.getSession( ).getAttribute( CommentPlugin.PLUGIN_NAME + CommentConstants.SESSION_COMMENT_ADMIN_POST_BACK_URL );
-        request.getSession( ).setAttribute( CommentPlugin.PLUGIN_NAME + CommentConstants.SESSION_COMMENT_ADMIN_POST_BACK_URL, null );
+            return redirect( request, AdminMessageService.getMessageUrl( request, CommentConstants.MESSAGE_ERROR_GENERIC_MESSAGE, AdminMessage.TYPE_ERROR ) );
+        }
+        _resourceHistoryService.create( CommentResourceExtender.EXTENDER_TYPE_COMMENT, strIdExtendableResource, strExtendableResourceType,
+                CommentUtils.getLuteceUserGuid( request ), request.getRemoteAddr( ) );
+
+        return redirect( request, getPostBackUrl( request, strIdExtendableResource, strExtendableResourceType, nIdParentComment ) );
+    }
+
+    /**
+     * Asks the confirmation of an operation or a workflow action on a comment.
+     *
+     * @param request
+     *            the request
+     * @return the redirection to the confirmation message
+     */
+    @View( value = VIEW_CONFIRM_UPDATE_COMMENT, securityTokenAction = CommentConstants.ACTION_UPDATE_COMMENT )
+    public String getConfirmUpdateComment( HttpServletRequest request )
+    {
+        Comment comment = getComment( request );
+        String strIdAction = request.getParameter( CommentConstants.PARAMETER_ID_ACTION );
+        String strOperation = request.getParameter( CommentConstants.PARAMETER_OPERATION );
+        String strLabel = null;
+
+        if ( comment != null && StringUtils.isNumeric( strIdAction ) )
+        {
+            strLabel = getWorkflowActionName( comment, Integer.parseInt( strIdAction ) );
+        }
+        else
+            if ( comment != null && MAP_OPERATION_LABELS.containsKey( strOperation ) )
+            {
+                strLabel = I18nService.getLocalizedString( MAP_OPERATION_LABELS.get( strOperation ), getLocale( ) );
+            }
+
+        if ( strLabel == null )
+        {
+            return redirect( request, AdminMessageService.getMessageUrl( request, Messages.MANDATORY_FIELDS, AdminMessage.TYPE_STOP ) );
+        }
+
+        UrlItem url = new UrlItem( getActionUrl( CommentConstants.ACTION_UPDATE_COMMENT ) );
+        url.addParameter( CommentConstants.PARAMETER_ID_COMMENT, comment.getIdComment( ) );
+        if ( StringUtils.isNumeric( strIdAction ) )
+        {
+            url.addParameter( CommentConstants.PARAMETER_ID_ACTION, strIdAction );
+        }
+        else
+        {
+            url.addParameter( CommentConstants.PARAMETER_OPERATION, strOperation );
+        }
+        url.addParameter( CommentConstants.PARAMETER_FROM_URL, getFromUrl( request ) );
+        addViewResourceInUrl( request, url );
+
+        Object [ ] args = {
+                strLabel
+        };
+
+        return redirect( request,
+                AdminMessageService.getMessageUrl( request, MESSAGE_CONFIRM_UPDATE_COMMENT, args, url.getUrl( ), AdminMessage.TYPE_CONFIRMATION ) );
+    }
+
+    /**
+     * Applies an operation or a workflow action to a comment.
+     *
+     * @param request
+     *            the request
+     * @return the redirection
+     */
+    @Action( CommentConstants.ACTION_UPDATE_COMMENT )
+    public String doUpdateComment( HttpServletRequest request )
+    {
+        Comment comment = getComment( request );
+
+        if ( comment == null )
+        {
+            return redirect( request, AdminMessageService.getMessageUrl( request, Messages.MANDATORY_FIELDS, AdminMessage.TYPE_STOP ) );
+        }
+
+        String strIdAction = request.getParameter( CommentConstants.PARAMETER_ID_ACTION );
+
+        if ( StringUtils.isNumeric( strIdAction ) )
+        {
+            return processWorkflowAction( request, comment, Integer.parseInt( strIdAction ) );
+        }
+
+        String strOperation = StringUtils.defaultString( request.getParameter( CommentConstants.PARAMETER_OPERATION ) );
+
+        try
+        {
+            switch( strOperation )
+            {
+                case CommentConstants.OPERATION_PUBLISH:
+                    _commentService.updateCommentStatus( comment.getIdComment( ), true );
+                    break;
+                case CommentConstants.OPERATION_UNPUBLISH:
+                    _commentService.updateCommentStatus( comment.getIdComment( ), false );
+                    break;
+                case CommentConstants.OPERATION_FLAG_IMPORTANT:
+                    _commentService.updateFlagImportant( comment.getIdComment( ), true );
+                    break;
+                case CommentConstants.OPERATION_CANCEL_FLAG_IMPORTANT:
+                    _commentService.updateFlagImportant( comment.getIdComment( ), false );
+                    break;
+                case CommentConstants.OPERATION_PIN:
+                    _commentService.updateCommentPinned( comment.getIdComment( ), true );
+                    break;
+                case CommentConstants.OPERATION_CANCEL_PIN:
+                    _commentService.updateCommentPinned( comment.getIdComment( ), false );
+                    break;
+                default:
+                    return redirect( request, AdminMessageService.getMessageUrl( request, Messages.MANDATORY_FIELDS, AdminMessage.TYPE_STOP ) );
+            }
+        }
+        catch( Exception ex )
+        {
+            AppLogService.error( "{} when updating a comment", ex.getMessage( ), ex );
+
+            return redirect( request, AdminMessageService.getMessageUrl( request, CommentConstants.MESSAGE_ERROR_GENERIC_MESSAGE, AdminMessage.TYPE_ERROR ) );
+        }
+
+        return redirect( request, getPostBackUrl( request, comment ) );
+    }
+
+    /**
+     * Asks the confirmation of the removal of a comment.
+     *
+     * @param request
+     *            the request
+     * @return the redirection to the confirmation message
+     */
+    @View( value = VIEW_CONFIRM_REMOVE_COMMENT, securityTokenAction = ACTION_REMOVE_COMMENT )
+    public String getConfirmRemoveComment( HttpServletRequest request )
+    {
+        UrlItem url = new UrlItem( getActionUrl( ACTION_REMOVE_COMMENT ) );
+        url.addParameter( CommentConstants.PARAMETER_ID_COMMENT, request.getParameter( CommentConstants.PARAMETER_ID_COMMENT ) );
+        url.addParameter( CommentConstants.PARAMETER_FROM_URL, getFromUrl( request ) );
+        addViewResourceInUrl( request, url );
+
+        return redirect( request,
+                AdminMessageService.getMessageUrl( request, CommentConstants.MESSAGE_CONFIRM_REMOVE_COMMENT, url.getUrl( ), AdminMessage.TYPE_CONFIRMATION ) );
+    }
+
+    /**
+     * Removes a comment.
+     *
+     * @param request
+     *            the request
+     * @return the redirection
+     */
+    @Action( ACTION_REMOVE_COMMENT )
+    public String doRemoveComment( HttpServletRequest request )
+    {
+        Comment comment = getComment( request );
+
+        if ( comment == null )
+        {
+            return redirect( request, AdminMessageService.getMessageUrl( request, Messages.MANDATORY_FIELDS, AdminMessage.TYPE_STOP ) );
+        }
+
+        try
+        {
+            _commentService.remove( comment.getIdComment( ) );
+        }
+        catch( Exception ex )
+        {
+            AppLogService.error( "{} when removing a comment", ex.getMessage( ), ex );
+
+            return redirect( request, AdminMessageService.getMessageUrl( request, CommentConstants.MESSAGE_ERROR_GENERIC_MESSAGE, AdminMessage.TYPE_ERROR ) );
+        }
+
+        return redirect( request, getPostBackUrl( request, comment ) );
+    }
+
+    /**
+     * Displays the tasks form of a workflow action.
+     *
+     * @param request
+     *            the request
+     * @param model
+     *            the model
+     * @return the page
+     */
+    @View( value = VIEW_TASKS_FORM_WORKFLOW, securityTokenAction = ACTION_SAVE_TASK_FORM )
+    public String getTasksFormWorkflow( HttpServletRequest request, Models model )
+    {
+        String strIdAction = request.getParameter( CommentConstants.PARAMETER_ID_ACTION );
+        Comment comment = getComment( request );
+
+        if ( comment == null || !StringUtils.isNumeric( strIdAction ) )
+        {
+            return redirect( request, AdminMessageService.getMessageUrl( request, Messages.MANDATORY_FIELDS, AdminMessage.TYPE_STOP ) );
+        }
+
+        String strResourceType = _commentService.getResourceType( comment.getExtendableResourceType( ) );
+        String strHtmlTasksForm = _workflowService.getDisplayTasksForm( comment.getIdComment( ), strResourceType, Integer.parseInt( strIdAction ), request,
+                getLocale( ), getUser( ) );
+
+        model.put( CommentConstants.PARAMETER_ID_ACTION, strIdAction );
+        model.put( CommentConstants.PARAMETER_ID_COMMENT, Integer.toString( comment.getIdComment( ) ) );
+        model.put( MARK_TASK_FORM, strHtmlTasksForm );
+
+        return getPage( MESSAGE_TITLE_TASKS_FORM_WORKFLOW, TEMPLATE_TASKS_FORM_WORKFLOW, model );
+    }
+
+    /**
+     * Saves the tasks form of a workflow action and processes the action.
+     *
+     * @param request
+     *            the request
+     * @return the redirection
+     */
+    @Action( ACTION_SAVE_TASK_FORM )
+    public String doSaveTaskForm( HttpServletRequest request )
+    {
+        String strIdAction = request.getParameter( CommentConstants.PARAMETER_ID_ACTION );
+        Comment comment = getComment( request );
+
+        if ( comment == null || !StringUtils.isNumeric( strIdAction ) )
+        {
+            return redirect( request, JSP_VIEW_EXTENDER_INFO );
+        }
+
+        int nIdAction = Integer.parseInt( strIdAction );
+        String strResourceType = _commentService.getResourceType( comment.getExtendableResourceType( ) );
+        int nIdExtender = getIdExtender( comment );
+
+        try
+        {
+            String strError = _workflowService.doSaveTasksForm( comment.getIdComment( ), strResourceType, nIdAction, nIdExtender, request, getLocale( ),
+                    getUser( ) );
+
+            if ( strError != null )
+            {
+                return redirect( request, AdminMessageService.getMessageUrl( request, CommentConstants.MESSAGE_ERROR_GENERIC_MESSAGE, AdminMessage.TYPE_ERROR ) );
+            }
+
+            _workflowService.doProcessAction( comment.getIdComment( ), strResourceType, nIdAction, nIdExtender, request, getLocale( ), false, getUser( ) );
+        }
+        catch( AppException e )
+        {
+            if ( e.getCause( ) instanceof ResourceWorkflowLockedException )
+            {
+                return redirect( request, AdminMessageService.getMessageUrl( request, CommentConstants.MESSAGE_ERROR_ACTION_LOCKED, AdminMessage.TYPE_STOP ) );
+            }
+
+            AppLogService.error( "Error processing action for record {}", comment.getIdComment( ), e );
+        }
+
+        return redirect( request, getPostBackUrl( request, comment ) );
+    }
+
+    /**
+     * Processes a workflow action on a comment, or shows its tasks form first.
+     *
+     * @param request
+     *            the request
+     * @param comment
+     *            the comment
+     * @param nIdAction
+     *            the workflow action id
+     * @return the redirection
+     */
+    private String processWorkflowAction( HttpServletRequest request, Comment comment, int nIdAction )
+    {
+        String strResourceType = _commentService.getResourceType( comment.getExtendableResourceType( ) );
+
+        try
+        {
+            if ( _workflowService.isDisplayTasksForm( nIdAction, getLocale( ) ) )
+            {
+                Map<String, String> mapParameters = new HashMap<>( );
+                mapParameters.put( CommentConstants.PARAMETER_ID_ACTION, Integer.toString( nIdAction ) );
+                mapParameters.put( CommentConstants.PARAMETER_ID_COMMENT, Integer.toString( comment.getIdComment( ) ) );
+
+                return redirect( request, VIEW_TASKS_FORM_WORKFLOW, mapParameters );
+            }
+
+            _workflowService.doProcessAction( comment.getIdComment( ), strResourceType, nIdAction, getIdExtender( comment ), request, getLocale( ), false,
+                    getUser( ) );
+        }
+        catch( Exception e )
+        {
+            if ( e.getCause( ) instanceof ResourceWorkflowLockedException )
+            {
+                return redirect( request, AdminMessageService.getMessageUrl( request, CommentConstants.MESSAGE_ERROR_ACTION_LOCKED, AdminMessage.TYPE_STOP ) );
+            }
+
+            AppLogService.error( "Error processing action for record {}", comment.getIdComment( ), e );
+        }
+
+        return redirect( request, getPostBackUrl( request, comment ) );
+    }
+
+    /**
+     * Gets the name of a workflow action the current user may run on a comment.
+     *
+     * @param comment
+     *            the comment
+     * @param nIdAction
+     *            the workflow action id
+     * @return the action name, or null when the action is not available
+     */
+    private String getWorkflowActionName( Comment comment, int nIdAction )
+    {
+        CommentExtenderConfig config = _configService.find( getIdExtender( comment ) );
+
+        if ( config == null || !_workflowService.isAvailable( ) )
+        {
+            return null;
+        }
+
+        return _workflowService
+                .getActions( comment.getIdComment( ), _commentService.getResourceType( comment.getExtendableResourceType( ) ), config.getIdWorkflow( ),
+                        (User) getUser( ) )
+                .stream( ).filter( action -> action.getId( ) == nIdAction ).map( action -> action.getName( ) ).findFirst( ).orElse( null );
+    }
+
+    /**
+     * Loads the comment named by the request.
+     *
+     * @param request
+     *            the request
+     * @return the comment, or null when the id is missing or unknown
+     */
+    private Comment getComment( HttpServletRequest request )
+    {
+        String strIdComment = request.getParameter( CommentConstants.PARAMETER_ID_COMMENT );
+
+        if ( StringUtils.isNotBlank( strIdComment ) && StringUtils.isNumeric( strIdComment ) )
+        {
+            return _commentService.findByPrimaryKey( Integer.parseInt( strIdComment ) );
+        }
+
+        return null;
+    }
+
+    /**
+     * Gets the origin URL parameter, its ampersands encoded.
+     *
+     * @param request
+     *            the request
+     * @return the origin URL
+     */
+    private String getFromUrl( HttpServletRequest request )
+    {
+        return Strings.CS.replace( request.getParameter( CommentConstants.PARAMETER_FROM_URL ), CommentConstants.CONSTANT_AND,
+                CommentConstants.CONSTANT_AND_HTML );
+    }
+
+    /**
+     * Adds the resource id to the URL, or the wildcard when every resource is displayed.
+     *
+     * @param strIdExtendableResource
+     *            the resource id
+     * @param request
+     *            the request
+     * @param url
+     *            the URL
+     */
+    private void addIdExtendableResourceInUrl( String strIdExtendableResource, HttpServletRequest request, UrlItem url )
+    {
+        String strViewAllResources = request.getParameter( CommentConstants.PARAMETER_VIEW_ALL_RESOURCES );
+        if ( StringUtils.isNotEmpty( strViewAllResources ) && Boolean.parseBoolean( strViewAllResources ) )
+        {
+            url.addParameter( CommentConstants.PARAMETER_ID_EXTENDABLE_RESOURCE, CommentConstants.CONSTANT_ALL_RESSOURCE_ID );
+        }
+        else
+        {
+            url.addParameter( CommentConstants.PARAMETER_ID_EXTENDABLE_RESOURCE, strIdExtendableResource );
+        }
+    }
+
+    /**
+     * Adds the view all resources parameter to the URL when the request carries it.
+     *
+     * @param request
+     *            the request
+     * @param url
+     *            the URL
+     */
+    private void addViewResourceInUrl( HttpServletRequest request, UrlItem url )
+    {
+        String strViewAllResources = request.getParameter( CommentConstants.PARAMETER_VIEW_ALL_RESOURCES );
+        if ( StringUtils.isNotEmpty( strViewAllResources ) )
+        {
+            url.addParameter( CommentConstants.PARAMETER_VIEW_ALL_RESOURCES, strViewAllResources );
+        }
+    }
+
+    /**
+     * Gets the id of the comment extender of the resource of a comment.
+     *
+     * @param comment
+     *            the comment
+     * @return the extender id
+     */
+    private int getIdExtender( Comment comment )
+    {
+        ResourceExtenderDTOFilter filter = new ResourceExtenderDTOFilter( );
+        filter.setFilterExtendableResourceType( comment.getExtendableResourceType( ) );
+        filter.setFilterIdExtendableResource( comment.getIdExtendableResource( ) );
+        filter.setFilterExtenderType( CommentResourceExtender.EXTENDER_TYPE_COMMENT );
+        filter.setIncludeWildcardResource( true );
+
+        List<ResourceExtenderDTO> listResourceExtender = _resourceExtenderService.findByFilter( filter );
+        return listResourceExtender.get( 0 ).getIdExtender( );
+    }
+
+    /**
+     * Gets the URL of the page that displays a comment.
+     *
+     * @param request
+     *            the request
+     * @param comment
+     *            the comment
+     * @return the URL
+     */
+    private String getPostBackUrl( HttpServletRequest request, Comment comment )
+    {
+        return getPostBackUrl( request, comment.getIdExtendableResource( ), comment.getExtendableResourceType( ), comment.getIdParentComment( ) );
+    }
+
+    /**
+     * Gets the URL of the comments page saved in session, reset after use.
+     *
+     * @param request
+     *            the request
+     * @param strIdExtendableResource
+     *            the resource id
+     * @param strExtendableResourceType
+     *            the resource type
+     * @param nIdParentComment
+     *            the parent comment id, 0 for none
+     * @return the URL
+     */
+    private String getPostBackUrl( HttpServletRequest request, String strIdExtendableResource, String strExtendableResourceType, int nIdParentComment )
+    {
+        String strSessionKey = CommentPlugin.PLUGIN_NAME + CommentConstants.SESSION_COMMENT_ADMIN_POST_BACK_URL;
+        String strPostBackUrl = (String) request.getSession( ).getAttribute( strSessionKey );
+        request.getSession( ).setAttribute( strSessionKey, null );
+
         if ( StringUtils.isEmpty( strPostBackUrl ) )
         {
             strPostBackUrl = JSP_VIEW_EXTENDER_INFO;
         }
+
         UrlItem url = new UrlItem( strPostBackUrl );
         url.addParameter( CommentConstants.PARAMETER_EXTENDER_TYPE, CommentResourceExtender.EXTENDER_TYPE_COMMENT );
         addIdExtendableResourceInUrl( strIdExtendableResource, request, url );
@@ -391,220 +673,8 @@ public class CommentJspBean extends PluginAdminPageJspBean
         {
             url.addParameter( CommentConstants.PARAMETER_ID_COMMENT, nIdParentComment );
         }
-        url.addParameter( CommentConstants.PARAMETER_FROM_URL, StringUtils.replace( request.getParameter( CommentConstants.PARAMETER_FROM_URL ),
-                CommentConstants.CONSTANT_AND, CommentConstants.CONSTANT_AND_HTML ) );
 
-        return url.getUrl( );
-    }
-
-    private void addIdExtendableResourceInUrl( String strIdExtendableResource, HttpServletRequest request, UrlItem url )
-    {
-        String strViewAllResources = request.getParameter( CommentConstants.PARAMETER_VIEW_ALL_RESOURCES );
-        if ( !StringUtils.isEmpty( strViewAllResources ) && new Boolean( strViewAllResources ) )
-        {
-            url.addParameter( CommentConstants.PARAMETER_ID_EXTENDABLE_RESOURCE, CommentConstants.CONSTANT_ALL_RESSOURCE_ID );
-        }
-        else
-        {
-            url.addParameter( CommentConstants.PARAMETER_ID_EXTENDABLE_RESOURCE, strIdExtendableResource );
-        }
-
-    }
-
-    private void addViewResourceInUrl( HttpServletRequest request, UrlItem url )
-    {
-
-        String strViewAllResources = request.getParameter( CommentConstants.PARAMETER_VIEW_ALL_RESOURCES );
-        if ( !StringUtils.isEmpty( strViewAllResources ) )
-        {
-            url.addParameter( CommentConstants.PARAMETER_VIEW_ALL_RESOURCES, strViewAllResources );
-        }
-
-    }
-
-    /**
-     * Do process a workflow action over an comment
-     * 
-     * @param request
-     *            The request
-     * @return The next URL to redirect to
-     */
-    public String doProcessWorkflowAction( HttpServletRequest request )
-    {
-        String strIdAction = request.getParameter( CommentConstants.PARAMETER_ID_ACTION );
-        String strIdComment = request.getParameter( CommentConstants.PARAMETER_ID_COMMENT );
-
-        if ( StringUtils.isNumeric( strIdAction ) && StringUtils.isNumeric( strIdComment ) )
-        {
-            int nIdAction = Integer.parseInt( strIdAction );
-            int nIdComment = Integer.parseInt( strIdComment );
-            
-            Comment comment = _commentService.findByPrimaryKey( nIdComment );
-            String resourceType = _commentService.getResourceType( comment.getExtendableResourceType( ) );
-           
-            int nIdExtendable = getIdExtender( comment );
-                        
-            try
-            {
-                if ( WorkflowService.getInstance( ).isDisplayTasksForm( nIdAction, getLocale( ) ) )
-                {                   
-                    UrlItem url = new UrlItem( JSP_VIEW_TASKS_FORM );
-                   
-                    url.addParameter( CommentConstants.PARAMETER_ID_ACTION, strIdAction ); 
-                    url.addParameter( CommentConstants.PARAMETER_ID_COMMENT, strIdComment );
-
-                    return url.getUrl( );
-                }
-                else
-                {
-                    WorkflowService.getInstance( ).doProcessAction( nIdComment, resourceType, nIdAction, nIdExtendable, request, getLocale( ), false, getUser( ) );
-                }
-            }
-            catch( Exception e )
-            {
-                if ( e.getCause( ) instanceof ResourceWorkflowLockedException )
-                {
-                    // Another action is in progress on this comment (other user or instance) or its state has changed
-                    return AdminMessageService.getMessageUrl( request, CommentConstants.MESSAGE_ERROR_ACTION_LOCKED, AdminMessage.TYPE_STOP );
-                }
-
-                AppLogService.error( "Error processing action for record {} ", nIdComment, e.getMessage( ), e );
-            }
-            
-            return getPostBackUrl( request, comment );
-        }
-        return AdminMessageService.getMessageUrl( request, CommentConstants.MESSAGE_ERROR_GENERIC_MESSAGE, AdminMessage.TYPE_ERROR );
-    }
-    
-    /**
-     * Get tasks form workflow
-     * @param request
-     * @return
-     */
-    public String getTasksFormWorkflow( HttpServletRequest request )
-    {
-        String strIdAction = request.getParameter( CommentConstants.PARAMETER_ID_ACTION );
-        String strIdComment = request.getParameter( CommentConstants.PARAMETER_ID_COMMENT );
-        
-        Map<String, Object> model = new HashMap<>( );
-        
-        if ( StringUtils.isNumeric( strIdAction ) && StringUtils.isNumeric( strIdComment ) )
-        {
-            int nIdAction = Integer.parseInt( strIdAction );
-            int nIdComment = Integer.parseInt( strIdComment );
-            
-            Comment comment = _commentService.findByPrimaryKey( nIdComment );  
-            String resourceType = _commentService.getResourceType( comment.getExtendableResourceType( ) );   
-            String strHtmlTasksForm = WorkflowService.getInstance( ).getDisplayTasksForm( nIdComment, resourceType, nIdAction, request, getLocale( ),
-                    getUser( ) );
-            
-            model.put( CommentConstants.PARAMETER_ID_ACTION, strIdAction );
-            model.put( CommentConstants.PARAMETER_ID_COMMENT, strIdComment );
-            model.put( MARK_TASK_FORM, strHtmlTasksForm );
-        }
-        
-        HtmlTemplate template = AppTemplateService.getTemplate( TEMPLATE_TASKS_FORM_WORKFLOW, AdminUserService.getLocale( request ), model );
-        
-        return getAdminPage( template.getHtml( ) );
-    }
-    
-    /**
-     * Do save task form
-     * @param request
-     * @return The next URL to redirect to
-     */
-    public String doSaveTaskForm( HttpServletRequest request )
-    {
-        String strIdAction = request.getParameter( CommentConstants.PARAMETER_ID_ACTION );
-        String strIdComment = request.getParameter( CommentConstants.PARAMETER_ID_COMMENT );
-        
-        if ( StringUtils.isNumeric( strIdAction ) && StringUtils.isNumeric( strIdComment ) )
-        {
-            int nIdAction = Integer.parseInt( strIdAction );
-            int nIdComment = Integer.parseInt( strIdComment );
-        
-            Comment comment = _commentService.findByPrimaryKey( nIdComment );
-            String resourceType = _commentService.getResourceType( comment.getExtendableResourceType( ) );
-        
-            int nIdExtendable = getIdExtender( comment );
-            
-            try
-            {
-                String strError = WorkflowService.getInstance( ).doSaveTasksForm( comment.getIdComment( ) , resourceType, nIdAction, nIdExtendable,
-                        request, getLocale( ), getUser( ) );
-                
-                if( strError != null )
-                {
-                    return AdminMessageService.getMessageUrl( request, CommentConstants.MESSAGE_ERROR_GENERIC_MESSAGE, AdminMessage.TYPE_ERROR );
-                }
-                else 
-                {
-                    WorkflowService.getInstance( ).doProcessAction( comment.getIdComment( ), resourceType, nIdAction, nIdExtendable, request, getLocale( ),
-                            false, getUser( ) );
-                }
-            }
-            catch ( AppException e )
-            {
-                if ( e.getCause( ) instanceof ResourceWorkflowLockedException )
-                {
-                    return AdminMessageService.getMessageUrl( request, CommentConstants.MESSAGE_ERROR_ACTION_LOCKED, AdminMessage.TYPE_STOP );
-                }
-
-                AppLogService.error( "Error processing action for record {}", nIdComment, e );
-            }
-        
-            return getPostBackUrl( request, comment );
-        }
-        return getAdminPage( JSP_VIEW_EXTENDER_INFO );
-    }
-
-    /**
-     * Get id extender
-     * @param comment
-     * @return id extender
-     */
-    private int getIdExtender( Comment comment )
-    {
-        ResourceExtenderDTOFilter filter = new ResourceExtenderDTOFilter( );
-        filter.setFilterExtendableResourceType( comment.getExtendableResourceType( ) );
-        filter.setFilterIdExtendableResource( comment.getIdExtendableResource( ) );
-        filter.setFilterExtenderType( CommentResourceExtender.EXTENDER_TYPE_COMMENT );
-        filter.setIncludeWildcardResource( true );
-        
-        List<ResourceExtenderDTO> listResourceExtender = _resourceExtenderService.findByFilter( filter );        
-        return listResourceExtender.get( 0 ).getIdExtender( );
-    }
-    
-    /**
-     * get post back url
-     * @param request
-     * @param comment
-     * @return back url
-     */
-    private String getPostBackUrl( HttpServletRequest request, Comment comment )
-    {
-        String strPostBackUrl = (String) request.getSession( )
-                .getAttribute( CommentPlugin.PLUGIN_NAME + CommentConstants.SESSION_COMMENT_ADMIN_POST_BACK_URL );
-        
-        request.getSession( ).setAttribute( CommentPlugin.PLUGIN_NAME + CommentConstants.SESSION_COMMENT_ADMIN_POST_BACK_URL, null );
-        
-        if ( StringUtils.isEmpty( strPostBackUrl ) )
-        {
-            strPostBackUrl = JSP_VIEW_EXTENDER_INFO;
-        }
-        
-        UrlItem url = new UrlItem( strPostBackUrl );
-        url.addParameter( CommentConstants.PARAMETER_EXTENDER_TYPE, CommentResourceExtender.EXTENDER_TYPE_COMMENT );
-        addIdExtendableResourceInUrl( comment.getIdExtendableResource( ), request, url );
-
-        url.addParameter( CommentConstants.PARAMETER_EXTENDABLE_RESOURCE_TYPE, comment.getExtendableResourceType( ) );
-        if ( comment.getIdParentComment( ) > 0 )
-        {
-            url.addParameter( CommentConstants.PARAMETER_ID_COMMENT, comment.getIdParentComment( ) );
-        }
-        
-        url.addParameter( CommentConstants.PARAMETER_FROM_URL, StringUtils.replace( request.getParameter( CommentConstants.PARAMETER_FROM_URL ),
-                CommentConstants.CONSTANT_AND, CommentConstants.CONSTANT_AND_HTML ) );
+        url.addParameter( CommentConstants.PARAMETER_FROM_URL, getFromUrl( request ) );
 
         return url.getUrl( );
     }

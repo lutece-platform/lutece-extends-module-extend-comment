@@ -58,28 +58,29 @@ public class CommentExtenderConfigDAO implements IExtenderConfigDAO<CommentExten
      * {@inheritDoc}
      */
     @Override
-    public synchronized void insert( CommentExtenderConfig config )
+    public void insert( CommentExtenderConfig config )
     {
         int nIndex = 1;
 
-        DAOUtil daoUtil = new DAOUtil( SQL_QUERY_INSERT, CommentPlugin.getPlugin( ) );
-        daoUtil.setInt( nIndex++, config.getIdExtender( ) );
-        daoUtil.setBoolean( nIndex++, config.isModerated( ) );
-        daoUtil.setInt( nIndex++, config.getNbComments( ) );
-        daoUtil.setInt( nIndex++, config.getIdMailingList( ) );
-        daoUtil.setBoolean( nIndex++, config.getAuthorizeSubComments( ) );
-        daoUtil.setBoolean( nIndex++, config.getUseBBCodeEditor( ) );
-        daoUtil.setString( nIndex++, config.getAdminBadge( ) );
-        daoUtil.setString( nIndex++, config.getMessageCommentCreated( ) );
-        daoUtil.setInt( nIndex++, config.getAddCommentPosition( ) );
-        daoUtil.setBoolean( nIndex++, config.isEnabledAuthMode( ) );
-        daoUtil.setBoolean( nIndex++, config.isDisplaySubComments( ) );
-        daoUtil.setBoolean( nIndex++, config.getDeleteComments( ) );
-        daoUtil.setBoolean( nIndex++, config.isTriCommentsByCreation( ) );
-        daoUtil.setInt( nIndex, config.getIdWorkflow( ) );
+        try ( DAOUtil daoUtil = new DAOUtil( SQL_QUERY_INSERT, CommentPlugin.getPlugin( ) ) )
+        {
+            daoUtil.setInt( nIndex++, config.getIdExtender( ) );
+            daoUtil.setBoolean( nIndex++, config.isModerated( ) );
+            daoUtil.setInt( nIndex++, config.getNbComments( ) );
+            daoUtil.setInt( nIndex++, config.getIdMailingList( ) );
+            daoUtil.setBoolean( nIndex++, config.getAuthorizeSubComments( ) );
+            daoUtil.setBoolean( nIndex++, config.getUseBBCodeEditor( ) );
+            daoUtil.setString( nIndex++, config.getAdminBadge( ) );
+            daoUtil.setString( nIndex++, config.getMessageCommentCreated( ) );
+            daoUtil.setInt( nIndex++, config.getAddCommentPosition( ) );
+            daoUtil.setBoolean( nIndex++, config.isEnabledAuthMode( ) );
+            daoUtil.setBoolean( nIndex++, config.isDisplaySubComments( ) );
+            daoUtil.setBoolean( nIndex++, config.getDeleteComments( ) );
+            daoUtil.setBoolean( nIndex++, config.isTriCommentsByCreation( ) );
+            daoUtil.setInt( nIndex, config.getIdWorkflow( ) );
 
-        daoUtil.executeUpdate( );
-        daoUtil.free( );
+            daoUtil.executeUpdate( );
+        }
     }
 
     /**
@@ -90,25 +91,26 @@ public class CommentExtenderConfigDAO implements IExtenderConfigDAO<CommentExten
     {
         int nIndex = 1;
 
-        DAOUtil daoUtil = new DAOUtil( SQL_QUERY_UPDATE, CommentPlugin.getPlugin( ) );
-        daoUtil.setBoolean( nIndex++, config.isModerated( ) );
-        daoUtil.setInt( nIndex++, config.getNbComments( ) );
-        daoUtil.setInt( nIndex++, config.getIdMailingList( ) );
-        daoUtil.setBoolean( nIndex++, config.getAuthorizeSubComments( ) );
-        daoUtil.setBoolean( nIndex++, config.getUseBBCodeEditor( ) );
-        daoUtil.setString( nIndex++, config.getAdminBadge( ) );
-        daoUtil.setString( nIndex++, config.getMessageCommentCreated( ) );
-        daoUtil.setInt( nIndex++, config.getAddCommentPosition( ) );
-        daoUtil.setBoolean( nIndex++, config.isEnabledAuthMode( ) );
-        daoUtil.setBoolean( nIndex++, config.isDisplaySubComments( ) );
-        daoUtil.setBoolean( nIndex++, config.getDeleteComments( ) );
-        daoUtil.setBoolean( nIndex++, config.isTriCommentsByCreation( ) );
-        daoUtil.setInt( nIndex++, config.getIdWorkflow( ) );
+        try ( DAOUtil daoUtil = new DAOUtil( SQL_QUERY_UPDATE, CommentPlugin.getPlugin( ) ) )
+        {
+            daoUtil.setBoolean( nIndex++, config.isModerated( ) );
+            daoUtil.setInt( nIndex++, config.getNbComments( ) );
+            daoUtil.setInt( nIndex++, config.getIdMailingList( ) );
+            daoUtil.setBoolean( nIndex++, config.getAuthorizeSubComments( ) );
+            daoUtil.setBoolean( nIndex++, config.getUseBBCodeEditor( ) );
+            daoUtil.setString( nIndex++, config.getAdminBadge( ) );
+            daoUtil.setString( nIndex++, config.getMessageCommentCreated( ) );
+            daoUtil.setInt( nIndex++, config.getAddCommentPosition( ) );
+            daoUtil.setBoolean( nIndex++, config.isEnabledAuthMode( ) );
+            daoUtil.setBoolean( nIndex++, config.isDisplaySubComments( ) );
+            daoUtil.setBoolean( nIndex++, config.getDeleteComments( ) );
+            daoUtil.setBoolean( nIndex++, config.isTriCommentsByCreation( ) );
+            daoUtil.setInt( nIndex++, config.getIdWorkflow( ) );
 
-        daoUtil.setInt( nIndex, config.getIdExtender( ) );
+            daoUtil.setInt( nIndex, config.getIdExtender( ) );
 
-        daoUtil.executeUpdate( );
-        daoUtil.free( );
+            daoUtil.executeUpdate( );
+        }
     }
 
     /**
@@ -117,11 +119,12 @@ public class CommentExtenderConfigDAO implements IExtenderConfigDAO<CommentExten
     @Override
     public void delete( int nIdExtender )
     {
-        DAOUtil daoUtil = new DAOUtil( SQL_QUERY_DELETE, CommentPlugin.getPlugin( ) );
-        daoUtil.setInt( 1, nIdExtender );
+        try ( DAOUtil daoUtil = new DAOUtil( SQL_QUERY_DELETE, CommentPlugin.getPlugin( ) ) )
+        {
+            daoUtil.setInt( 1, nIdExtender );
 
-        daoUtil.executeUpdate( );
-        daoUtil.free( );
+            daoUtil.executeUpdate( );
+        }
     }
 
     /**
@@ -130,33 +133,33 @@ public class CommentExtenderConfigDAO implements IExtenderConfigDAO<CommentExten
     @Override
     public CommentExtenderConfig load( int nIdExtender )
     {
-        DAOUtil daoUtil = new DAOUtil( SQL_QUERY_SELECT, CommentPlugin.getPlugin( ) );
-        daoUtil.setInt( 1, nIdExtender );
-        daoUtil.executeQuery( );
-
         CommentExtenderConfig config = null;
-
-        if ( daoUtil.next( ) )
+        try ( DAOUtil daoUtil = new DAOUtil( SQL_QUERY_SELECT, CommentPlugin.getPlugin( ) ) )
         {
-            int nIndex = 1;
-            config = new CommentExtenderConfig( );
-            config.setIdExtender( daoUtil.getInt( nIndex++ ) );
-            config.setModerated( daoUtil.getBoolean( nIndex++ ) );
-            config.setNbComments( daoUtil.getInt( nIndex++ ) );
-            config.setIdMailingList( daoUtil.getInt( nIndex++ ) );
-            config.setAuthorizeSubComments( daoUtil.getBoolean( nIndex++ ) );
-            config.setUseBBCodeEditor( daoUtil.getBoolean( nIndex++ ) );
-            config.setAdminBadge( daoUtil.getString( nIndex++ ) );
-            config.setMessageCommentCreated( daoUtil.getString( nIndex++ ) );
-            config.setAddCommentPosition( daoUtil.getInt( nIndex++ ) );
-            config.setEnabledAuthMode( daoUtil.getBoolean( nIndex++ ) );
-            config.setDisplaySubComments( daoUtil.getBoolean( nIndex++ ) );
-            config.setDeleteComments( daoUtil.getBoolean( nIndex++ ) );
-            config.setTriCommentsByCreation( daoUtil.getBoolean( nIndex++ ) );
-            config.setIdWorkflow( daoUtil.getInt( nIndex ) );
-        }
+            daoUtil.setInt( 1, nIdExtender );
+            daoUtil.executeQuery( );
 
-        daoUtil.free( );
+
+            if ( daoUtil.next( ) )
+            {
+                int nIndex = 1;
+                config = new CommentExtenderConfig( );
+                config.setIdExtender( daoUtil.getInt( nIndex++ ) );
+                config.setModerated( daoUtil.getBoolean( nIndex++ ) );
+                config.setNbComments( daoUtil.getInt( nIndex++ ) );
+                config.setIdMailingList( daoUtil.getInt( nIndex++ ) );
+                config.setAuthorizeSubComments( daoUtil.getBoolean( nIndex++ ) );
+                config.setUseBBCodeEditor( daoUtil.getBoolean( nIndex++ ) );
+                config.setAdminBadge( daoUtil.getString( nIndex++ ) );
+                config.setMessageCommentCreated( daoUtil.getString( nIndex++ ) );
+                config.setAddCommentPosition( daoUtil.getInt( nIndex++ ) );
+                config.setEnabledAuthMode( daoUtil.getBoolean( nIndex++ ) );
+                config.setDisplaySubComments( daoUtil.getBoolean( nIndex++ ) );
+                config.setDeleteComments( daoUtil.getBoolean( nIndex++ ) );
+                config.setTriCommentsByCreation( daoUtil.getBoolean( nIndex++ ) );
+                config.setIdWorkflow( daoUtil.getInt( nIndex ) );
+            }
+        }
 
         return config;
     }

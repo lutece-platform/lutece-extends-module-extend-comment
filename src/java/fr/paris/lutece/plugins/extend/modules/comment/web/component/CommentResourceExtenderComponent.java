@@ -45,6 +45,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import fr.paris.lutece.plugins.extend.business.extender.ResourceExtenderDTO;
 import fr.paris.lutece.plugins.extend.business.extender.config.IExtenderConfig;
@@ -58,27 +60,26 @@ import fr.paris.lutece.plugins.extend.modules.comment.service.ICommentService;
 import fr.paris.lutece.plugins.extend.modules.comment.service.extender.CommentResourceExtender;
 import fr.paris.lutece.plugins.extend.modules.comment.util.constants.CommentConstants;
 import fr.paris.lutece.plugins.extend.service.ExtendPlugin;
-import fr.paris.lutece.plugins.extend.service.content.ExtendableContentPostProcessor;
 import fr.paris.lutece.plugins.extend.service.extender.IResourceExtenderService;
 import fr.paris.lutece.plugins.extend.service.extender.IResourceExtender;
-import fr.paris.lutece.plugins.extend.service.extender.ResourceExtenderService;
 import fr.paris.lutece.plugins.extend.service.extender.config.IResourceExtenderConfigService;
 import fr.paris.lutece.plugins.extend.util.ExtendErrorException;
 import fr.paris.lutece.plugins.extend.web.component.AbstractResourceExtenderComponent;
+import fr.paris.lutece.api.user.User;
 import fr.paris.lutece.portal.business.user.AdminUser;
 import fr.paris.lutece.portal.service.admin.AdminUserService;
-import fr.paris.lutece.portal.service.captcha.CaptchaSecurityService;
+import fr.paris.lutece.portal.service.captcha.ICaptchaService;
+import fr.paris.lutece.plugins.extend.service.content.ExtendableContentPostProcessor;
 import fr.paris.lutece.portal.service.content.ContentPostProcessor;
 import fr.paris.lutece.portal.service.i18n.I18nService;
 import fr.paris.lutece.portal.service.mailinglist.AdminMailingListService;
-import fr.paris.lutece.portal.service.plugin.PluginService;
 import fr.paris.lutece.portal.service.prefs.UserPreferencesService;
 import fr.paris.lutece.portal.service.resource.IExtendableResource;
 import fr.paris.lutece.portal.service.security.LuteceUser;
 import fr.paris.lutece.portal.service.security.SecurityService;
+import fr.paris.lutece.portal.service.util.BeanUtils;
 import fr.paris.lutece.portal.service.template.AppTemplateService;
 import fr.paris.lutece.portal.service.util.AppPathService;
-import fr.paris.lutece.portal.service.util.AppPropertiesService;
 import fr.paris.lutece.portal.service.workflow.WorkflowService;
 import fr.paris.lutece.portal.web.constants.Parameters;
 import fr.paris.lutece.portal.web.util.LocalizedDelegatePaginator;
@@ -89,7 +90,7 @@ import fr.paris.lutece.util.html.Paginator;
 import fr.paris.lutece.util.url.UrlItem;
 
 import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.enterprise.inject.spi.CDI;
+import jakarta.enterprise.inject.Instance;
 /**
  * 
  * CommentResourceExtenderComponent
@@ -118,9 +119,24 @@ public class CommentResourceExtenderComponent extends AbstractResourceExtenderCo
     @Named( "extend-comment.commentResourceExtender" )
     private IResourceExtender _resourceExtender;
 
-    private int _nDefaultItemsPerPage = AppPropertiesService.getPropertyInt( CommentConstants.PROPERTY_DEFAULT_LIST_COMMENTS_PER_PAGE, 50 );
+    @Inject
+    @ConfigProperty( name = CommentConstants.PROPERTY_DEFAULT_LIST_COMMENTS_PER_PAGE, defaultValue = "50" )
+    private int _nDefaultItemsPerPage;
 
-    private volatile ContentPostProcessor _contentPostProcessor;
+    @Inject
+    @ConfigProperty( name = CommentConstants.PROPERTY_USE_CAPTCHA, defaultValue = "true" )
+    private boolean _bUseCaptcha;
+
+    @Inject
+    @Named( ExtendableContentPostProcessor.BEAN_NAME )
+    private ContentPostProcessor _contentPostProcessor;
+
+    @Inject
+    private WorkflowService _workflowService;
+
+    @Inject
+    @Named( BeanUtils.BEAN_CAPTCHA_SERVICE )
+    private Instance<ICaptchaService> _captchaService;
 
     /**
      * {@inheritDoc}
@@ -169,7 +185,7 @@ public class CommentResourceExtenderComponent extends AbstractResourceExtenderCo
         }
 
         List<Comment> listComments = _commentService.findLastComments( strIdExtendableResource, strExtendableResourceType, nNbComments, true, true,
-                bAuthorizedsubComments, bDisplaySubComments, config.isTriCommentsByCreation( ) );
+                bAuthorizedsubComments, bDisplaySubComments, bTriCommentsByDateCreation );
 
         int nNbPublishedComments = _commentService.getCommentNb( strIdExtendableResource, strExtendableResourceType, !bDisplaySubComments, true );
         Map<String, Object> model = new HashMap<String, Object>( );
@@ -189,14 +205,12 @@ public class CommentResourceExtenderComponent extends AbstractResourceExtenderCo
         if ( nAddCommentPosition != AddCommentPosition.NEW_PAGE )
         {
             // Add Captcha
-            boolean bIsCaptchaEnabled = PluginService.isPluginEnable( CommentConstants.JCAPTCHA_PLUGIN )
-                    && Boolean.parseBoolean( AppPropertiesService.getProperty( CommentConstants.PROPERTY_USE_CAPTCHA, Boolean.TRUE.toString( ) ) );
+            boolean bIsCaptchaEnabled = _bUseCaptcha && _captchaService.isResolvable( );
             model.put( CommentConstants.MARK_IS_ACTIVE_CAPTCHA, bIsCaptchaEnabled );
 
             if ( bIsCaptchaEnabled )
             {
-                CaptchaSecurityService captchaService = new CaptchaSecurityService( );
-                model.put( CommentConstants.MARK_CAPTCHA, captchaService.getHtmlCode( ) );
+                model.put( CommentConstants.MARK_CAPTCHA, _captchaService.get( ).getHtmlCode( ) );
             }
             // Add NickName if auth mod enable
             if ( config != null && config.isEnabledAuthMode( ) )
@@ -250,13 +264,7 @@ public class CommentResourceExtenderComponent extends AbstractResourceExtenderCo
         HtmlTemplate template = AppTemplateService.getTemplate( TEMPLATE_COMMENT, request.getLocale( ), model );
         String strContent = template.getHtml( );
 
-        ContentPostProcessor postProcessor = getExtendPostProcessor( );
-        if ( postProcessor != null )
-        {
-            strContent = postProcessor.process( request, strContent );
-        }
-
-        return strContent;
+        return _contentPostProcessor.process( request, strContent );
     }
 
     /**
@@ -275,10 +283,10 @@ public class CommentResourceExtenderComponent extends AbstractResourceExtenderCo
         model.put( CommentConstants.MARK_ADD_COMMENT_POSITIONS, AddCommentPosition.getAllPositions( ) );
         model.put( CommentConstants.MARK_WEBAPP_URL, AppPathService.getBaseUrl( request ) );
         model.put( CommentConstants.MARK_LOCALE, AdminUserService.getLocale( request ) );
-        if ( WorkflowService.getInstance( ).isAvailable( ) )
+        if ( _workflowService.isAvailable( ) )
         {
             AdminUser adminUser = AdminUserService.getAdminUser( request );
-            ReferenceList referenceList = WorkflowService.getInstance( ).getWorkflowsEnabled( adminUser, locale );
+            ReferenceList referenceList = _workflowService.getWorkflowsEnabled( (User) adminUser, locale );
             model.put( CommentConstants.MARK_WORKFLOW_REF_LIST, referenceList );
         }
 
@@ -362,7 +370,7 @@ public class CommentResourceExtenderComponent extends AbstractResourceExtenderCo
 
             int nItemsCount = _commentService.getCommentNb( resourceExtender.getIdExtendableResource( ), resourceExtender.getExtendableResourceType( ),
                     config.getAuthorizeSubComments( ), false );
-            String strFromUrl = StringUtils.replace( request.getParameter( CommentConstants.PARAMETER_FROM_URL ), CommentConstants.CONSTANT_AND,
+            String strFromUrl = Strings.CS.replace( request.getParameter( CommentConstants.PARAMETER_FROM_URL ), CommentConstants.CONSTANT_AND,
                     CommentConstants.CONSTANT_AND_HTML );
             strCurrentPageIndex = Paginator.getPageIndex( request, Paginator.PARAMETER_PAGE_INDEX, strCurrentPageIndex );
             int nOldITemsPerPage = nItemsPerPage;
@@ -408,11 +416,11 @@ public class CommentResourceExtenderComponent extends AbstractResourceExtenderCo
             }
             if ( StringUtils.isNotBlank( strFilterPinned ) )
             {
-                commentFilter.setPinned( new Boolean( strFilterPinned ) );
+                commentFilter.setPinned( Boolean.valueOf( strFilterPinned ) );
             }
             if ( StringUtils.isNotBlank( strFilterMarkAsImportant ) )
             {
-                commentFilter.setImportant( new Boolean( strFilterMarkAsImportant ) );
+                commentFilter.setImportant( Boolean.valueOf( strFilterMarkAsImportant ) );
             }
             commentFilter.setSortedAttributeName( strSortedAttributeName );
             commentFilter.setAscSort( bIsAscSort );
@@ -434,13 +442,13 @@ public class CommentResourceExtenderComponent extends AbstractResourceExtenderCo
             Map<String, Object> model = new HashMap<String, Object>( );
             List<Comment> listCommentDisplay = paginator.getPageItems( );
             AdminUser adminUser = AdminUserService.getAdminUser( request );
-            if ( adminUser != null && WorkflowService.getInstance( ).isAvailable( ) )
+            if ( adminUser != null && _workflowService.isAvailable( ) )
             {
                 for ( Comment comment : listCommentDisplay )
                 {
 
-                    comment.setListWorkflowActions( WorkflowService.getInstance( ).getActions( comment.getIdComment( ),
-                            _commentService.getResourceType( comment.getExtendableResourceType( ) ), config.getIdWorkflow( ), adminUser ) );
+                    comment.setListWorkflowActions( _workflowService.getActions( comment.getIdComment( ),
+                            _commentService.getResourceType( comment.getExtendableResourceType( ) ), config.getIdWorkflow( ), (User) adminUser ) );
 
                 }
             }
@@ -502,13 +510,7 @@ public class CommentResourceExtenderComponent extends AbstractResourceExtenderCo
 
             String strContent = template.getHtml( );
 
-            ContentPostProcessor postProcessor = getExtendPostProcessor( );
-            if ( postProcessor != null )
-            {
-                strContent = postProcessor.process( request, strContent );
-            }
-
-            return strContent;
+            return _contentPostProcessor.process( request, strContent );
             }
         }
 
@@ -547,26 +549,6 @@ public class CommentResourceExtenderComponent extends AbstractResourceExtenderCo
             urlItem.addParameter( entry.getKey( ), entry.getValue( ) [0] );
         }
         return urlItem.getUrl( );
-    }
-
-    /**
-     * Get the content post processor of plugin extend
-     * 
-     * @return the content post processor of plugin extend
-     */
-    private ContentPostProcessor getExtendPostProcessor( )
-    {
-        if ( _contentPostProcessor == null )
-        {
-            synchronized( this )
-            {
-                if ( _contentPostProcessor == null )
-                {
-                    _contentPostProcessor = CDI.current( ).select( ContentPostProcessor.class).get( );
-                }
-            }
-        }
-        return _contentPostProcessor;
     }
 
 }

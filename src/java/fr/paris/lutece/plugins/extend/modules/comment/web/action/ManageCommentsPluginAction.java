@@ -51,6 +51,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Named;
@@ -121,7 +122,7 @@ public class ManageCommentsPluginAction extends AbstractPluginAction<IExtendable
         url.addParameter( CommentConstants.PARAMETER_EXTENDER_TYPE, CommentResourceExtender.EXTENDER_TYPE_COMMENT );
         url.addParameter( CommentConstants.PARAMETER_ID_EXTENDABLE_RESOURCE, request.getParameter( CommentConstants.PARAMETER_ID_EXTENDABLE_RESOURCE ) );
         url.addParameter( CommentConstants.PARAMETER_EXTENDABLE_RESOURCE_TYPE, request.getParameter( CommentConstants.PARAMETER_EXTENDABLE_RESOURCE_TYPE ) );
-        url.addParameter( CommentConstants.PARAMETER_FROM_URL, StringUtils.replace( request.getHeader( CommentConstants.PARAMETER_REFERER ),
+        url.addParameter( CommentConstants.PARAMETER_FROM_URL, Strings.CS.replace( request.getHeader( CommentConstants.PARAMETER_REFERER ),
                 CommentConstants.CONSTANT_AND, CommentConstants.CONSTANT_AND_HTML ) );
 
         DefaultPluginActionResult result = new DefaultPluginActionResult( );

@@ -46,71 +46,70 @@
 	<#assign email = getEmail( myLuteceUser! ) />
 	<#assign userName = getUserName( myLuteceUser! ) />
 </#if>
+<#macro addCommentForm>
 <#if !commentConfig.enabledAuthMode || myLuteceUser??>
-	<div class="row">
-		<div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
-		<form class="form-horizontal" method="post" action="jsp/site/Portal.jsp">
-			<fieldset>
-				<#if commentConfig.moderated>
-					<legend>#i18n{module.extend.comment.add_comment.messageModeratedComment}</legend>
-				</#if>
-				<#if !commentConfig.enabledAuthMode>
-					 <div class="form-group">
-						<label class="col-xs-12 col-sm-12 col-md-3 col-lg-3" for="email">#i18n{module.extend.comment.add_comment.labelEmail} * :</label>
-						<div class="col-xs-12 col-sm-12 col-md-6 col-lg-6">
-							<input type="text" name="email" size="20" maxlength="255" value="${email!}" />
-						</div>
-					</div>
-				<#else>
-					<input type="hidden" name="email" size="20" maxlength="255" value="${email!}" />
-				</#if>
-			
-				<div class="form-group">
-					<label class="col-xs-12 col-sm-12 col-md-3 col-lg-3" for="name">#i18n{module.extend.comment.add_comment.labelName} * :</label>
-					<div class="col-xs-12 col-sm-12 col-md-6 col-lg-6">
-						<input type="text" name="name" size="20" maxlength="255" value="<#if !commentConfig.enabledAuthMode>${userName!}<#else>${nickname!}</#if>" />
-					</div>
-				</div>
-				<div class="form-group">
-					<label class="col-xs-12 col-sm-12 col-md-3 col-lg-3" for="comment">#i18n{module.extend.comment.add_comment.labelComment} * :</label>
-					<div class="col-xs-12 col-sm-12 col-md-6 col-lg-6">
-						<textarea <#if commentConfig.useBBCodeEditor>class="richtext"</#if> name="comment" cols="45" rows="8"></textarea>
-					</div>
-				</div>
-				<#if is_active_captcha>
-					<div>${captcha!}</div>
-				</#if>
-				<div class="form-group">
-					<div class="col-xs-12 col-sm-12 col-md-offset-3 col-lg-offset-3">
-						<input type="hidden" name="page" value="extend-comment" />
-						<input type="hidden" name="action" value="doAddComment" />
-						<#if idComment??>
-							<input type="hidden" name="idParentComment" value="${idComment}" />
-						</#if>
-						<#if returnToCommentList?? && returnToCommentList>
-							<input type="hidden" name="returnToCommentList" value="true" />
-						</#if>
-						<#if from_url?? && from_url?has_content && from_url != "null">
-							<input type="hidden" name="from_url" value="${from_url!}" />
-						</#if>
-						<input type="hidden" name="idExtendableResource" value="${idExtendableResource!}" />
-						<input type="hidden" name="extendableResourceType" value="${extendableResourceType!}" />
-						<button class="btn btn-primary btn-sm" type="submit" name="add" value="#i18n{portal.util.labelValidate}" title="#i18n{portal.util.labelValidate}" >
-							<i class="glyphicon glyphicon-ok">&nbsp;</i>&nbsp;#i18n{portal.util.labelValidate}
-						</button>
-						<input type="hidden" name="_csrftoken" value="${_csrftoken!}" />
-						<#if addCommentPosition = 0>
-						<button class="btn btn-sm" type="button" name="cancel" onclick="javascript:history.back();" value="#i18n{portal.util.labelBack}" title="#i18n{portal.util.labelBack}" >
-							#i18n{portal.util.labelBack}
-						</button>
-						</#if>
-					</div>
-				</div>
-			</fieldset>
-		</form>
-		</div>
-	</div>
-</#if>	
+	<@cForm action='jsp/site/Portal.jsp'>
+		<#if commentConfig.moderated>
+			<@cAlert type='info'>#i18n{module.extend.comment.add_comment.messageModeratedComment}</@cAlert>
+		</#if>
+		<#if !commentConfig.enabledAuthMode>
+			<@cField label='#i18n{module.extend.comment.add_comment.labelEmail}' for='email' required=true>
+				<@cInput type='email' name='email' maxlength=255 value='${email!}' required=true />
+			</@cField>
+		<#else>
+			<@cInput type='hidden' name='email' value='${email!}' />
+		</#if>
+		<#assign nameValue><#if !commentConfig.enabledAuthMode>${userName!}<#else>${nickname!}</#if></#assign>
+		<@cField label='#i18n{module.extend.comment.add_comment.labelName}' for='name' required=true>
+			<@cInput name='name' maxlength=255 value=nameValue required=true />
+		</@cField>
+		<@cField label='#i18n{module.extend.comment.add_comment.labelComment}' for='comment' required=true>
+			<@cTextArea name='comment' class=commentConfig.useBBCodeEditor?then('form-control richtext', 'form-control') rows=8 required=true />
+		</@cField>
+		<#if is_active_captcha>
+			<@cBlock>${captcha!}</@cBlock>
+		</#if>
+		<@cInput type='hidden' name='page' value='extend-comment' />
+		<@cInput type='hidden' name='action' value='doAddComment' />
+		<#if idComment??>
+			<@cInput type='hidden' name='idParentComment' value='${idComment}' />
+		</#if>
+		<#if returnToCommentList?? && returnToCommentList>
+			<@cInput type='hidden' name='returnToCommentList' value='true' />
+		</#if>
+		<#if from_url?? && from_url?has_content && from_url != "null">
+			<@cInput type='hidden' name='from_url' value='${from_url!}' />
+		</#if>
+		<@cInput type='hidden' name='idExtendableResource' value='${idExtendableResource!}' />
+		<@cInput type='hidden' name='extendableResourceType' value='${extendableResourceType!}' />
+		<@cBlock class='d-flex gap-2 mt-3'>
+			<@cBtn label='#i18n{portal.util.labelValidate}' class='primary btn-sm' type='submit'>
+				<@cIcon name='check' />
+			</@cBtn>
+			<#if addCommentPosition = 0>
+				<@cBtn label='#i18n{portal.util.labelBack}' class='secondary btn-sm' type='button' params='onclick="history.back( )"' />
+			</#if>
+		</@cBlock>
+	</@cForm>
+</#if>
+</#macro>
+<#if listComments??>
+	<@addCommentForm />
+<#else>
+<@cTpl>
+<@cContainer>
+<@cRow>
+	<@cCol>
+		<@cTitle level=1>#i18n{module.extend.comment.add_comment.pageTitle}</@cTitle>
+		<#if resourceExtenderName?has_content>
+		<@cText id='extend-comment-resource'>#i18n{module.extend.comment.add_comment.labelResource} : <strong>${resourceExtenderName}</strong></@cText>
+		</#if>
+		<@addCommentForm />
+	</@cCol>
+</@cRow>
+</@cContainer>
+</@cTpl>
+</#if>
 <#if commentConfig.useBBCodeEditor>
 	<@initEditor />
 </#if>

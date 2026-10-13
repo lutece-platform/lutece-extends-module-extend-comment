@@ -1,29 +1,29 @@
 <#include "/admin/util/editor/editor.html" />
-<#assign actionUrl>jsp/admin/plugins/extend/modules/comment/DoCreateComment.jsp<#if idComment??>#comment_${idComment}</#if></#assign>
-<@row>
-	<@columns>
-		<@box>
-			<@boxBody>
-				<@tform action=actionUrl>
-					<@input type='hidden' name='idExtendableResource' value='${idExtendableResource}' />
-					<@input type='hidden' name='extendableResourceType' value='${extendableResourceType}' />
-					<@input type='hidden' name='viewAllResources' value='${allResources?c}' />
-					<#if from_url?? && from_url?has_content && from_url != "null"><@input type='hidden' name='from_url' value='${from_url!}' /></#if>
-					<@input type='hidden' name='idComment' value='${idComment!}' />
-					<@formGroup labelKey='#i18n{module.extend.comment.comment_info.labelName}' labelFor='name'>
-						<@input name='name' value='${name!}'  placeHolder='${name!}' mandatory=true />
-					</@formGroup>
-					<@formGroup labelKey='#i18n{module.extend.comment.add_comment.labelComment}' labelFor='comment'>
-						<@input name='comment' type='textarea' class='richtext' value='' placeHolder='#i18n{module.extend.comment.add_comment.placeholderComment}' />
-					</@formGroup>
-					<@formGroup>
-						<@button type='submit' name='validate' value='' title='#i18n{portal.util.labelValidate}' color='primary' buttonIcon='check' />
-						<@button name='validate' value='' title='#i18n{portal.util.labelCancel}' color='default' buttonIcon='undo' params='  onClick="javascript:history.go(-1);"'/>
-					</@formGroup>
-				</@tform>
-			</@boxBody>
-		</@box>
-	</@columns>
-</@row>
+<#assign actionUrl>jsp/admin/plugins/extend/modules/comment/ManageComments.jsp<#if idComment?? && idComment?has_content>#comment_${idComment}</#if></#assign>
+<@pageContainer>
+	<@pageColumn>
+		<@pageHeader title='#i18n{module.extend.comment.create_comment.pageTitle}'>
+			<@button type='button' title='#i18n{portal.util.labelBack}' color='light' buttonIcon='arrow-left' params='onclick="history.back( )"' />
+		</@pageHeader>
+		<@tform action=actionUrl boxed=true>
+			<@input type='hidden' name='action' value='createComment' />
+			<@input type='hidden' name='idExtendableResource' value='${idExtendableResource!}' />
+			<@input type='hidden' name='extendableResourceType' value='${extendableResourceType!}' />
+			<@input type='hidden' name='viewAllResources' value='${allResources?c}' />
+			<#if from_url?? && from_url?has_content && from_url != "null"><@input type='hidden' name='from_url' value='${from_url!}' /></#if>
+			<@input type='hidden' name='idComment' value='${idComment!}' />
+			<@formGroup labelKey='#i18n{module.extend.comment.comment_info.labelName}' labelFor='name' mandatory=true rows=2>
+				<@input name='name' value='${name!}' placeHolder='${name!}' mandatory=true />
+			</@formGroup>
+			<@formGroup labelKey='#i18n{module.extend.comment.add_comment.labelComment}' labelFor='comment' mandatory=true rows=2>
+				<@input name='comment' type='textarea' richtext=true placeHolder='#i18n{module.extend.comment.add_comment.placeholderComment}' />
+			</@formGroup>
+			<@formGroup rows=2>
+				<@button type='submit' title='#i18n{portal.util.labelValidate}' color='primary' buttonIcon='check' />
+				<@button type='button' title='#i18n{portal.util.labelCancel}' color='light' buttonIcon='x' params='onclick="history.back( )"' />
+			</@formGroup>
+		</@tform>
+	</@pageColumn>
+</@pageContainer>
 <@initEditor />
 <@extendScript />

@@ -34,22 +34,27 @@
 package fr.paris.lutece.plugins.extend.modules.comment.service;
 
 import org.apache.commons.lang3.StringUtils;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
+
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 
 import fr.paris.lutece.plugins.avatar.service.AvatarService;
 import fr.paris.lutece.plugins.extend.modules.comment.business.Comment;
 import fr.paris.lutece.plugins.extend.modules.comment.util.constants.CommentConstants;
-import fr.paris.lutece.portal.service.util.AppPropertiesService;
 
 /**
  * 
  * CommentAvatarService
  *
  */
+@ApplicationScoped
 public class CommentAvatarService implements ICommentAvatarService
 {
 
-    private static ICommentAvatarService _singleton;
-    private static boolean _bUseLuteceUserNameAsAvatarKey;
+    @Inject
+    @ConfigProperty( name = CommentConstants.PROPERTY_USE_LUTECE_USER_NAME_AS_AVATAR_KEY, defaultValue = "false" )
+    private boolean _bUseLuteceUserNameAsAvatarKey;
 
     /**
      * {@inheritDoc}
@@ -76,23 +81,4 @@ public class CommentAvatarService implements ICommentAvatarService
         }
         return AvatarService.getAvatarUrl( comment.getEmail( ) );
     }
-
-    /**
-     * 
-     * @return singleton
-     */
-    public static ICommentAvatarService getInstance( )
-    {
-
-        if ( _singleton == null )
-        {
-
-            _singleton = new CommentAvatarService( );
-            _bUseLuteceUserNameAsAvatarKey = AppPropertiesService.getPropertyBoolean( CommentConstants.PROPERTY_USE_LUTECE_USER_NAME_AS_AVATAR_KEY, false );
-        }
-
-        return _singleton;
-
-    }
-
 }

@@ -162,7 +162,14 @@ public final class CommentConstants
     public static final String SESSION_COMMENT_ADD_MESSAGE_RESULT = "addCommentMessageResult";
 
     public static final String MARK_NICKNAME = "nickname";
-    public static final String JCAPTCHA_PLUGIN = "jcaptcha";
+    public static final String ACTION_UPDATE_COMMENT = "updateComment";
+    public static final String PARAMETER_OPERATION = "operation";
+    public static final String OPERATION_PUBLISH = "publish";
+    public static final String OPERATION_UNPUBLISH = "unpublish";
+    public static final String OPERATION_FLAG_IMPORTANT = "flagImportant";
+    public static final String OPERATION_CANCEL_FLAG_IMPORTANT = "cancelFlagImportant";
+    public static final String OPERATION_PIN = "pin";
+    public static final String OPERATION_CANCEL_PIN = "cancelPin";
     public static final String ADD_COMMENT_MESSAGE_RESULT_ANCHOR = "message";
     public static final String MARK_ADD_COMMENT_MESSAGE_RESULT = "addCommentMessageResult";
     public static final String FROM_SESSION = "from_session";
