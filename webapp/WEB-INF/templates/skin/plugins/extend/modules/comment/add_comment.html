@@ -73,6 +73,7 @@
 		</#if>
 		<@cInput type='hidden' name='page' value='extend-comment' />
 		<@cInput type='hidden' name='action' value='doAddComment' />
+		<@cInput type='hidden' name='token' value='${token!}' />
 		<#if idComment??>
 			<@cInput type='hidden' name='idParentComment' value='${idComment}' />
 		</#if>

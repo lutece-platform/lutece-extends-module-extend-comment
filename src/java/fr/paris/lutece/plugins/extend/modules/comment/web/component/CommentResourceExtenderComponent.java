@@ -77,6 +77,9 @@ import fr.paris.lutece.portal.service.prefs.UserPreferencesService;
 import fr.paris.lutece.portal.service.resource.IExtendableResource;
 import fr.paris.lutece.portal.service.security.LuteceUser;
 import fr.paris.lutece.portal.service.security.SecurityService;
+import fr.paris.lutece.portal.service.security.ISecurityTokenService;
+import fr.paris.lutece.portal.service.security.SecurityTokenService;
+import fr.paris.lutece.plugins.extend.modules.comment.web.CommentApp;
 import fr.paris.lutece.portal.service.util.BeanUtils;
 import fr.paris.lutece.portal.service.template.AppTemplateService;
 import fr.paris.lutece.portal.service.util.AppPathService;
@@ -105,6 +108,9 @@ public class CommentResourceExtenderComponent extends AbstractResourceExtenderCo
     private static final String TEMPLATE_MANAGE_COMMENTS = "admin/plugins/extend/modules/comment/comment_info.html";
 
     private static final String JSP_URL_MANAGE_COMMENTS = "jsp/admin/plugins/extend/ViewExtenderInfo.jsp";
+
+    @Inject
+    private ISecurityTokenService _securityTokenService;
 
     @Inject
     private ICommentService _commentService;
@@ -253,6 +259,10 @@ public class CommentResourceExtenderComponent extends AbstractResourceExtenderCo
                     request.getRequestURI( ) + "?" + request.getQueryString( ) );
             model.put( CommentConstants.PARAMETER_FROM_URL, CommentConstants.FROM_SESSION );
         }
+
+        // CSRF token protecting the doAddComment action (one token per extendable resource)
+        model.put( SecurityTokenService.MARK_TOKEN, _securityTokenService.getToken( request,
+                CommentApp.getAddCommentTokenKey( strIdExtendableResource, strExtendableResourceType ) ) );
 
         LuteceUser user = SecurityService.getInstance( ).getRegisteredUser( request );
 

@@ -458,6 +458,10 @@ public class CommentApp implements XPageApplication
             model.put( CommentConstants.MARK_WEBAPP_URL, AppPathService.getBaseUrl( request ) );
             model.put( CommentConstants.MARK_LOCALE, Locale.getDefault( ) );
 
+            // CSRF token protecting the doAddComment action (one token per extendable resource)
+            model.put( SecurityTokenService.MARK_TOKEN,
+                    _securityTokenService.getToken( request, getAddCommentTokenKey( strIdExtendableResource, strExtendableResourceType ) ) );
+
             boolean bIsCaptchaEnabled = isCaptchaEnabled( );
             model.put( MARK_IS_ACTIVE_CAPTCHA, bIsCaptchaEnabled );
 
@@ -503,6 +507,11 @@ public class CommentApp implements XPageApplication
     private XPage doAddComment( HttpServletRequest request, String strIdExtendableResource, String strExtendableResourceType )
             throws SiteMessageException, UserNotSignedException
     {
+        // CSRF protection: reject forged requests (missing or invalid security token)
+        if ( !_securityTokenService.validate( request, getAddCommentTokenKey( strIdExtendableResource, strExtendableResourceType ) ) )
+        {
+            SiteMessageService.setMessage( request, CommentConstants.MESSAGE_ERROR_GENERIC_MESSAGE, SiteMessage.TYPE_STOP );
+        }
 
         Comment comment = new Comment( );
         LuteceUser user = null;
@@ -656,15 +665,37 @@ public class CommentApp implements XPageApplication
         HttpServletResponse response = LocalVariables.getResponse( );
         UrlItem url = new UrlItem( (String) request.getSession( ).getAttribute( ExtendPlugin.PLUGIN_NAME + CommentConstants.PARAMETER_FROM_URL ) );
         url.setAnchor( CommentConstants.ADD_COMMENT_MESSAGE_RESULT_ANCHOR );
+        sendSafeRedirect( request, url.getUrl( ) );
+        return new XPage( );
+    }
+
+    /**
+     * Redirects to an internal URL only. An external or malformed URL (open redirect attempt) is replaced by the base URL of the site.
+     *
+     * @param request
+     *            the request
+     * @param strUrl
+     *            the URL to redirect to
+     */
+    private static void sendSafeRedirect( HttpServletRequest request, String strUrl )
+    {
+        HttpServletResponse response = LocalVariables.getResponse( );
         try
         {
-            response.sendRedirect( url.getUrl( ) );
+            if ( StringUtils.isNotBlank( strUrl ) && SecurityUtil.isInternalRedirectUrlSafe( strUrl, request ) )
+            {
+                response.sendRedirect( strUrl );
+            }
+            else
+            {
+                AppLogService.error( "module-extend-comment : open redirect blocked to {}", SecurityUtil.logForgingProtect( strUrl ) );
+                response.sendRedirect( AppPathService.getBaseUrl( request ) );
+            }
         }
         catch( IOException e )
         {
-            // log ?
+            AppLogService.error( e.getMessage( ), e );
         }
-        return new XPage( );
     }
 
     /**
@@ -761,6 +792,20 @@ public class CommentApp implements XPageApplication
     private static String getRemoveCommentTokenKey( String strIdExtendableResource, String strExtendableResourceType )
     {
         return CommentConstants.ACTION_REMOVE_COMMENT + "_" + strIdExtendableResource + "_" + strExtendableResourceType;
+    }
+
+    /**
+     * Builds the CSRF token key of the add comment action, scoped to an extendable resource.
+     *
+     * @param strIdExtendableResource
+     *            the extendable resource id
+     * @param strExtendableResourceType
+     *            the extendable resource type
+     * @return the token key
+     */
+    public static String getAddCommentTokenKey( String strIdExtendableResource, String strExtendableResourceType )
+    {
+        return CommentConstants.ACTION_DO_ADD_COMMENT + "_" + strIdExtendableResource + "_" + strExtendableResourceType;
     }
 
     /**
@@ -922,15 +967,7 @@ public class CommentApp implements XPageApplication
                     strFromUrl = strFromUrl.replaceAll( CONSTANT_AND_HTML, CONSTANT_AND );
                 }
 
-                HttpServletResponse response = LocalVariables.getResponse( );
-                try
-                {
-                    response.sendRedirect( strFromUrl );
-                }
-                catch( IOException e )
-                {
-                    // log ?
-                }
+                sendSafeRedirect( request, strFromUrl );
                 return new XPage( );
             }
         }

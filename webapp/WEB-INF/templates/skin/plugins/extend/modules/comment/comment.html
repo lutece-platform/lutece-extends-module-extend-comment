@@ -83,6 +83,7 @@
 					<@cForm action='jsp/site/Portal.jsp'>
 						<@cInput type='hidden' name='page' value='extend-comment' id='page-${formSuffix}' />
 						<@cInput type='hidden' name='action' value='doAddComment' id='action-${formSuffix}' />
+						<@cInput type='hidden' name='token' value='${token!}' id='token-${formSuffix}' />
 						<@cInput type='hidden' name='idParentComment' value='${comment.idComment!}' id='idParentComment-${formSuffix}' />
 						<#if returnToCommentList?? && returnToCommentList>
 							<@cInput type='hidden' name='returnToCommentList' value='true' id='returnToCommentList-${formSuffix}' />
