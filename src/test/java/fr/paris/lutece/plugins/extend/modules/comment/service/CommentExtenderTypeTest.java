@@ -75,7 +75,7 @@ public class CommentExtenderTypeTest extends LuteceTestCase
     }
 
     /**
-     * Once registered at startup, the facade knows the comment type, lists every comment of a resource and counts its
+     * Once registered at startup, the facade knows the comment type, lists the published comments of a resource (LUT-33002: unpublished comments are not indexed) and counts its
      * published parent comments.
      *
      * @throws InfoExtenderException
@@ -101,7 +101,8 @@ public class CommentExtenderTypeTest extends LuteceTestCase
 
         List<IExtendableResourceResult> listComments = ResourceExtenderServiceFacade.getInfoExtender( CommentResourceExtender.EXTENDER_TYPE_COMMENT,
                 ID_RESOURCE, RESOURCE_TYPE );
-        assertEquals( 4, listComments.size( ), "comments of the resource" );
+        assertEquals( 3, listComments.size( ), "published comments of the resource" );
+        assertTrue( listComments.stream( ).allMatch( result -> ( (Comment) result ).isPublished( ) ), "only published comments" );
     }
 
     /**
