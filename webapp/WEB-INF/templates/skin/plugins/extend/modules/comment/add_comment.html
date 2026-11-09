@@ -49,7 +49,7 @@
 <#if !commentConfig.enabledAuthMode || myLuteceUser??>
 	<div class="row">
 		<div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
-		<form class="form-horizontal" method="post" action="jsp/site/Portal.jsp">
+			<form class="form-horizontal" method="post" action="jsp/site/Portal.jsp" onsubmit="this.querySelector( '[name=add]' ).disabled = true;">
 			<fieldset>
 				<#if commentConfig.moderated>
 					<legend>#i18n{module.extend.comment.add_comment.messageModeratedComment}</legend>
