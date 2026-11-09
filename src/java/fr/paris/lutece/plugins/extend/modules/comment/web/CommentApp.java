@@ -34,7 +34,7 @@
 package fr.paris.lutece.plugins.extend.modules.comment.web;
 
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
+import java.sql.Timestamp;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -47,7 +47,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.ConstraintViolation;
 
-import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import fr.paris.lutece.plugins.extend.modules.comment.business.AddCommentPosition;
@@ -497,18 +496,7 @@ public class CommentApp implements XPageApplication
 
         Comment comment = new Comment( );
         LuteceUser user = null;
-        try
-        {
-            BeanUtils.populate( comment, request.getParameterMap( ) );
-        }
-        catch( IllegalAccessException e )
-        {
-            AppLogService.error( "Unable to fetch data from request", e );
-        }
-        catch( InvocationTargetException e )
-        {
-            AppLogService.error( "Unable to fetch data from request", e );
-        }
+        populateComment( comment, request );
 
         // Test the captcha
         if ( isCaptchaEnabled( ) && !_captchaService.get( ).validate( request ) )
@@ -673,6 +661,58 @@ public class CommentApp implements XPageApplication
             // log ?
         }
         return new XPage( );
+    }
+
+    /**
+     * Populates a comment from the request parameters. Only the fields a visitor may set are read: the other fields (admin comment, pinned, published,
+     * order, id...) get their default value, whatever the request contains.
+     *
+     * @param comment
+     *            the comment to populate
+     * @param request
+     *            the request
+     */
+    private void populateComment( Comment comment, HttpServletRequest request )
+    {
+        comment.setIdExtendableResource( request.getParameter( CommentConstants.PARAMETER_ID_EXTENDABLE_RESOURCE ) );
+        comment.setExtendableResourceType( request.getParameter( CommentConstants.PARAMETER_EXTENDABLE_RESOURCE_TYPE ) );
+        comment.setName( request.getParameter( CommentConstants.PARAMETER_NAME ) );
+        comment.setEmail( request.getParameter( CommentConstants.PARAMETER_EMAIL ) );
+        comment.setComment( request.getParameter( CommentConstants.PARAMETER_COMMENT ) );
+
+        int nIdParentComment = 0;
+        String strIdParentComment = request.getParameter( CommentConstants.PARAMETER_ID_PARENT_COMMENT );
+        if ( StringUtils.isNumeric( strIdParentComment ) )
+        {
+            nIdParentComment = Integer.parseInt( strIdParentComment );
+            if ( nIdParentComment > 0 )
+            {
+                // A reply to a reply is attached to the top level comment
+                Comment parentComment = _commentService.findByPrimaryKey( nIdParentComment );
+                if ( parentComment == null )
+                {
+                    nIdParentComment = 0;
+                }
+                else
+                    if ( parentComment.getIdParentComment( ) > 0 )
+                    {
+                        nIdParentComment = parentComment.getIdParentComment( );
+                    }
+            }
+        }
+        comment.setIdParentComment( nIdParentComment );
+
+        Timestamp currentDate = new Timestamp( System.currentTimeMillis( ) );
+        comment.setDateComment( currentDate );
+        comment.setDateLastModif( currentDate );
+
+        comment.setIdComment( 0 );
+        comment.setIsAdminComment( false );
+        comment.setPinned( false );
+        comment.setCommentOrder( 0 );
+        comment.setIsImportant( false );
+        comment.setPublished( false );
+        comment.setIpAddress( SecurityUtil.getRealIp( request ) );
     }
 
     /**
