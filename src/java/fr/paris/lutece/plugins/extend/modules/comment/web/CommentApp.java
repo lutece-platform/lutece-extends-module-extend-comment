@@ -77,6 +77,8 @@ import fr.paris.lutece.portal.service.plugin.Plugin;
 import fr.paris.lutece.portal.service.prefs.UserPreferencesService;
 import fr.paris.lutece.portal.service.security.LuteceUser;
 import fr.paris.lutece.portal.service.security.SecurityService;
+import fr.paris.lutece.portal.service.security.ISecurityTokenService;
+import fr.paris.lutece.portal.service.security.SecurityTokenService;
 import fr.paris.lutece.portal.service.security.UserNotSignedException;
 import fr.paris.lutece.portal.service.template.AppTemplateService;
 import fr.paris.lutece.portal.service.util.AppLogService;
@@ -154,6 +156,9 @@ public class CommentApp implements XPageApplication
     private IResourceExtenderHistoryService _resourceHistoryService;
 
     @Inject
+    private ISecurityTokenService _securityTokenService;
+
+    @Inject
     @ConfigProperty( name = CommentConstants.PROPERTY_DEFAULT_LIST_COMMENTS_PER_PAGE, defaultValue = "50" )
     private int _nDefaultItemsPerPage;
 
@@ -216,6 +221,8 @@ public class CommentApp implements XPageApplication
                         requestParameters.put( CommentConstants.PARAMETER_ID_COMMENT, strIdComment );
                         requestParameters.put( CommentConstants.PARAMETER_CONFIRM_REMOVE_COMMENT, "1" );
                         requestParameters.put( CommentConstants.PARAMETER_FROM_URL, strFromUrl );
+                        requestParameters.put( SecurityTokenService.PARAMETER_TOKEN, _securityTokenService.getToken( request,
+                                getRemoveCommentTokenKey( strIdExtendableResource, strExtendableResourceType ) ) );
                         SiteMessageService.setMessage( request, CommentConstants.MESSAGE_CONFIRM_REMOVE_COMMENT, SiteMessage.TYPE_CONFIRMATION, JSP_PORTAL,
                                 requestParameters );
                     }
@@ -743,6 +750,20 @@ public class CommentApp implements XPageApplication
     }
 
     /**
+     * Builds the CSRF token key of the remove comment action, scoped to an extendable resource.
+     *
+     * @param strIdExtendableResource
+     *            the extendable resource id
+     * @param strExtendableResourceType
+     *            the extendable resource type
+     * @return the token key
+     */
+    private static String getRemoveCommentTokenKey( String strIdExtendableResource, String strExtendableResourceType )
+    {
+        return CommentConstants.ACTION_REMOVE_COMMENT + "_" + strIdExtendableResource + "_" + strExtendableResourceType;
+    }
+
+    /**
      * Builds the stop message.
      * 
      * @param <A>
@@ -839,6 +860,13 @@ public class CommentApp implements XPageApplication
     {
         String strConfirmRemoveComment = String.valueOf( request.getParameter( CommentConstants.PARAMETER_CONFIRM_REMOVE_COMMENT ) );
         String strIdComment = String.valueOf( request.getParameter( CommentConstants.PARAMETER_ID_COMMENT ) );
+
+        // CSRF protection: the token is the one carried by the confirmation message
+        if ( !_securityTokenService.validate( request, getRemoveCommentTokenKey( strIdExtendableResource, strExtendableResourceType ) ) )
+        {
+            SiteMessageService.setMessage( request, CommentConstants.MESSAGE_ERROR_CANNOT_DELETE, SiteMessage.TYPE_ERROR );
+        }
+
         int nIdComment = Integer.parseInt( strIdComment );
         Comment comment = _commentService.findByPrimaryKey( nIdComment );
         LuteceUser user = null;
