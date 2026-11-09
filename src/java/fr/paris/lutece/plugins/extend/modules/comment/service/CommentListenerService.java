@@ -35,6 +35,9 @@ package fr.paris.lutece.plugins.extend.modules.comment.service;
 
 import fr.paris.lutece.plugins.extend.modules.comment.business.Comment;
 import fr.paris.lutece.plugins.extend.modules.comment.business.ICommentDAO;
+import fr.paris.lutece.portal.business.event.ResourceEvent;
+import fr.paris.lutece.portal.service.event.EventAction;
+import fr.paris.lutece.portal.service.event.Type.TypeQualifier;
 import fr.paris.lutece.portal.service.security.LuteceUser;
 import fr.paris.lutece.portal.service.util.AppLogService;
 
@@ -172,9 +175,10 @@ public class CommentListenerService
      */
     public static void publishComment( int nIdComment, boolean bPublished )
     {
-        if ( _mapListeners.size( ) > 0 )
+        // The comment is always loaded: the resource event below must be fired even when no comment listener is registered
+        Comment comment = getCommentDAO( ).load( nIdComment, CommentPlugin.getPlugin( ) );
+        if ( comment != null )
         {
-            Comment comment = getCommentDAO( ).load( nIdComment, CommentPlugin.getPlugin( ) );
             publishComment( comment.getExtendableResourceType( ), comment.getIdExtendableResource( ), bPublished );
         }
     }
@@ -207,6 +211,24 @@ public class CommentListenerService
                 listener.publishComment( strIdExtendableResource, bPublished );
             }
         }
+
+        fireResourceUpdated( strExtendableResourceType, strIdExtendableResource );
+    }
+
+    /**
+     * Fires an update event of the extended resource, so that its observers (search indexers...) take the published comments into account.
+     *
+     * @param strExtendableResourceType
+     *            The extendable resource type
+     * @param strIdExtendableResource
+     *            The extendable resource id
+     */
+    private static void fireResourceUpdated( String strExtendableResourceType, String strIdExtendableResource )
+    {
+        ResourceEvent event = new ResourceEvent( );
+        event.setIdResource( strIdExtendableResource );
+        event.setTypeResource( strExtendableResourceType );
+        CDI.current( ).getBeanManager( ).getEvent( ).select( new TypeQualifier( EventAction.UPDATE ) ).fire( event );
     }
 
     /**
