@@ -61,7 +61,9 @@
 						@Extender[${comment.idComment},Comment,rating,{show:"all"}]@
 					</@cBlock>
 					<@cBlock>
-						<@cImg src=comment.avatarUrl class='avatar' alt=comment.name! params='title="${comment.name!}"' />
+						<#if comment.avatarUrl?has_content>
+							<@cImg src=comment.avatarUrl class='avatar' alt=comment.name! params='title="${comment.name!}"' />
+						</#if>
 						<#if use_bbcode>
 							${comment.BBCodeComment!}
 						<#else>
