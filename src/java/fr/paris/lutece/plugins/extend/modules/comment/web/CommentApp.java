@@ -40,7 +40,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -514,6 +517,9 @@ public class CommentApp implements XPageApplication
             {
                 throw new UserNotSignedException( );
             }
+            // The author is the signed-in user: the name and email sent by the client are ignored
+            comment.setName( getAuthorName( user ) );
+            comment.setEmail( getAuthorEmail( user ) );
         }
 
         // Check mandatory fields
@@ -548,16 +554,7 @@ public class CommentApp implements XPageApplication
                     SiteMessageService.setMessage( request, MESSAGE_STOP_GENERIC_MESSAGE, paramsError, SiteMessage.TYPE_STOP );
                 }
 
-                comment.setEmail( user.getUserInfo( _strUserInfoEmail ) );
                 comment.setLuteceUserName( user.getName( ) );
-                if ( !StringUtils.isEmpty( comment.getName( ) ) )
-                {
-                    if ( UserPreferencesService.instance( ).getNickname( user ) == null
-                            || !UserPreferencesService.instance( ).getNickname( user ).equals( comment.getName( ) ) )
-                    {
-                        UserPreferencesService.instance( ).setNickname( user.getName( ), comment.getName( ) );
-                    }
-                }
             }
 
             comment.setIpAddress( SecurityUtil.getRealIp( request ) );
@@ -713,6 +710,36 @@ public class CommentApp implements XPageApplication
         comment.setIsImportant( false );
         comment.setPublished( false );
         comment.setIpAddress( SecurityUtil.getRealIp( request ) );
+    }
+
+    /**
+     * Gets the name of a signed-in author: first name and last name of the account, or its nickname when the account has no name.
+     *
+     * @param user
+     *            the signed-in user
+     * @return the author name
+     */
+    private static String getAuthorName( LuteceUser user )
+    {
+        String strFullName = Stream.of( user.getFirstName( ), user.getLastName( ) ).filter( StringUtils::isNotBlank ).collect( Collectors.joining( " " ) );
+        if ( StringUtils.isBlank( strFullName ) )
+        {
+            strFullName = Objects.toString( UserPreferencesService.instance( ).getNickname( user ), StringUtils.EMPTY );
+        }
+        return strFullName;
+    }
+
+    /**
+     * Gets the email of a signed-in author: the configured user info, or the account email.
+     *
+     * @param user
+     *            the signed-in user
+     * @return the author email
+     */
+    private String getAuthorEmail( LuteceUser user )
+    {
+        String strEmail = user.getUserInfo( _strUserInfoEmail );
+        return StringUtils.isNotBlank( strEmail ) ? strEmail : user.getEmail( );
     }
 
     /**

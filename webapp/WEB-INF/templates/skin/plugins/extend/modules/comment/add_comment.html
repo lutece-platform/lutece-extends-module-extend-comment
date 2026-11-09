@@ -59,10 +59,12 @@
 		<#else>
 			<@cInput type='hidden' name='email' value='${email!}' />
 		</#if>
-		<#assign nameValue><#if !commentConfig.enabledAuthMode>${userName!}<#else>${nickname!}</#if></#assign>
-		<@cField label='#i18n{module.extend.comment.add_comment.labelName}' for='name' required=true>
-			<@cInput name='name' maxlength=255 value=nameValue required=true />
-		</@cField>
+		<#-- Signed-in mode: the author name is the one of the account, it is not sent by the form -->
+		<#if !commentConfig.enabledAuthMode>
+			<@cField label='#i18n{module.extend.comment.add_comment.labelName}' for='name' required=true>
+				<@cInput name='name' maxlength=255 value='${userName!}' required=true />
+			</@cField>
+		</#if>
 		<@cField label='#i18n{module.extend.comment.add_comment.labelComment}' for='comment' required=true>
 			<@cTextArea name='comment' class=commentConfig.useBBCodeEditor?then('form-control richtext', 'form-control') rows=8 required=true />
 		</@cField>

@@ -101,7 +101,6 @@
 							</@cField>
 						<#else>
 							<@cInput type='hidden' name='email' id='email-${formSuffix}' value='${email!}' />
-							<@cInput type='hidden' name='name' id='comment-name-${formSuffix}' value='${nickname!}' />
 						</#if>
 						<@cField label='#i18n{module.extend.comment.add_comment.labelComment}' for='comment-${formSuffix}' required=true>
 							<@cTextArea name='comment' id='comment-${formSuffix}' rows=6 placeholder='#i18n{module.extend.comment.add_comment.placeholderComment}' required=true />
