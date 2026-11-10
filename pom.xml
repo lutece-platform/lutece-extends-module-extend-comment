@@ -10,7 +10,7 @@
     <groupId>fr.paris.lutece.plugins</groupId>
     <artifactId>module-extend-comment</artifactId>
     <packaging>lutece-plugin</packaging>
-    <version>1.2.2-SNAPSHOT</version>
+    <version>1.2.2-beta-03</version>
     <name>Lutece Extend Comment module</name>
 
     <repositories>
