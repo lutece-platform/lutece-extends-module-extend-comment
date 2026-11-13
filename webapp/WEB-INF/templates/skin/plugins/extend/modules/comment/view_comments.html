@@ -18,6 +18,7 @@
 <@cContainer>
 <@cRow>
 	<@cCol>
+		<@cTitle level=1>#i18n{module.extend.comment.view_comments.pageTitle}</@cTitle>
 		<@commentToolbar />
 		<@cBlock class='d-flex flex-wrap align-items-center justify-content-between gap-2'>
 			<@cText>
@@ -38,7 +39,7 @@
 			<#list listComments as comment>
 				<@cCard class='mb-3' id='comment_${comment.idComment?c}'>
 					<@cBlock class='d-flex flex-wrap justify-content-between gap-2'>
-						<@cTitle level=3 class='h5'>
+						<@cTitle level=2 class='h5'>
 							#i18n{module.extend.comment.view_comments.labelPosted} ${comment.dateComment!} #i18n{module.extend.comment.view_comments.labelBy} ${comment.name!}
 							<#if comment.isAdminComment>${richText(adminBadge!)}</#if>
 						</@cTitle>

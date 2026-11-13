@@ -5,8 +5,8 @@
 <#macro commentContent comment>
 <#if use_bbcode>${richText(comment.BBCodeComment!)}<#elseif comment.isAdminComment>${richText(comment.comment!)}<#else><#list comment.commentLines as line>${line}<#sep><br></#sep></#list></#if>
 </#macro>
-<#macro operationButton idComment operation title icon color='primary' size=''>
-	<@aButton color=color size=size href='${manageCommentsUrl}?view=confirmUpdateComment&idComment=${idComment?c}&operation=${operation}&viewAllResources=${allResources?c}${fromUrlParam}' title=title hideTitle=['all'] buttonIcon=icon />
+<#macro operationButton idComment operation title icon color='primary' size='' context=''>
+	<@aButton color=color size=size href='${manageCommentsUrl}?view=confirmUpdateComment&idComment=${idComment?c}&operation=${operation}&viewAllResources=${allResources?c}${fromUrlParam}' title=title hideTitle=['all'] buttonIcon=icon params={"aria-label": title + ' ' + context} />
 </#macro>
 <#assign fromUrlParam = (from_url?? && from_url?has_content && from_url != "null")?then('&from_url=${(from_url!)?url}', '')>
 <#assign addCommentHref = '${manageCommentsUrl}?view=createComment&idExtendableResource=${idExtendableResource?url}&extendableResourceType=${extendableResourceType?url}${fromUrlParam}'>
@@ -59,13 +59,13 @@
 		<#assign adminClass = comment.isAdminComment?then('', ' comment')>
 		<@div class="d-flex justify-content-between align-items-center ${adminClass}">
 			<@div class='fw-bold'>
-				<@span class='badge ${commentIconBg} text-white me-2'><@icon style=commentIcon /></@span><@icon style='user' /> ${comment.name!}
+				<@span class='badge ${commentIconBg} text-white me-2'><@icon style=commentIcon /><#if comment.pinned><span class="visually-hidden">#i18n{module.extend.comment.comment_info.pinned}</span><#elseif comment.isImportant><span class="visually-hidden">#i18n{module.extend.comment.comment_info.important}</span></#if></@span><@icon style='user' /> ${comment.name!}
 			</@div>
 			<@div>
 				<#if 0 < comment.firstUnpublishedSubComment>
 					<@tag color='warning' title='#i18n{module.extend.comment.comment_info.unpublishedSubComments}' tagIcon='alert-triangle'>#i18n{module.extend.comment.comment_info.unpublishedSubComments}</@tag>
 				</#if>
-				<#if comment.published><@tag color='success' tagIcon='eye' title='#i18n{module.extend.comment.comment_info.labelPublished}' /><#else><@tag color='danger' tagIcon='eye-off' title='#i18n{module.extend.comment.comment_info.labelUnpublished}' /></#if>
+				<#if comment.published><@tag color='success' tagIcon='eye' title='#i18n{module.extend.comment.comment_info.labelPublished}'><span class="visually-hidden">#i18n{module.extend.comment.comment_info.labelPublished}</span></@tag><#else><@tag color='danger' tagIcon='eye-off' title='#i18n{module.extend.comment.comment_info.labelUnpublished}'><span class="visually-hidden">#i18n{module.extend.comment.comment_info.labelUnpublished}</span></@tag></#if>
 				<@span class='dt-comment'>${comment.dateComment!?string["dd/MM/yyyy HH:mm"]}</@span>
 				<small>${comment.email!}</small>
 			</@div>
@@ -74,32 +74,32 @@
 		<#assign actions>
 			<@div class='d-flex flex-wrap gap-1'>
 				<#assign deleteHref = '${manageCommentsUrl}?view=confirmRemoveComment&idComment=${comment.idComment?c}&viewAllResources=${allResources?c}${fromUrlParam}'>
-				<@aButton color='danger' href=deleteHref title='#i18n{portal.util.labelDelete}' hideTitle=['all'] buttonIcon='trash' />
+				<@aButton color='danger' href=deleteHref title='#i18n{portal.util.labelDelete}' hideTitle=['all'] buttonIcon='trash' params={"aria-label": '#i18n{portal.util.labelDelete} ' + (comment.name!)} />
 				<#if comment.published>
-					<@operationButton idComment=comment.idComment operation='unpublish' color='danger' title='#i18n{module.extend.comment.comment_info.buttonUnpublish}' icon='toggle-right' />
+					<@operationButton idComment=comment.idComment context=(comment.name!) operation='unpublish' color='danger' title='#i18n{module.extend.comment.comment_info.buttonUnpublish}' icon='toggle-right' />
 				<#else>
-					<@operationButton idComment=comment.idComment operation='publish' title='#i18n{module.extend.comment.comment_info.buttonPublish}' icon='toggle-left' />
+					<@operationButton idComment=comment.idComment context=(comment.name!) operation='publish' title='#i18n{module.extend.comment.comment_info.buttonPublish}' icon='toggle-left' />
 				</#if>
 				<#if allowSubComments>
 					<#assign answerHref = '${manageCommentsUrl}?view=createComment&idExtendableResource=${idExtendableResource?url}&extendableResourceType=${extendableResourceType?url}&idComment=${comment.idComment?c}&viewAllResources=${allResources?c}${fromUrlParam}'>
-					<@aButton href=answerHref title='#i18n{module.extend.comment.comment_info.labelAnswer}' hideTitle=['all'] buttonIcon='message-reply' />
+					<@aButton href=answerHref title='#i18n{module.extend.comment.comment_info.labelAnswer}' hideTitle=['all'] buttonIcon='message-reply' params={"aria-label": '#i18n{module.extend.comment.comment_info.labelAnswer} ' + (comment.name!)} />
 				</#if>
 				<#if comment.isImportant>
-					<@operationButton idComment=comment.idComment operation='cancelFlagImportant' color='danger' title='#i18n{module.extend.comment.comment_info.labelCancelFlagImportant}' icon='thumb-down' />
+					<@operationButton idComment=comment.idComment context=(comment.name!) operation='cancelFlagImportant' color='danger' title='#i18n{module.extend.comment.comment_info.labelCancelFlagImportant}' icon='thumb-down' />
 				<#else>
-					<@operationButton idComment=comment.idComment operation='flagImportant' title='#i18n{module.extend.comment.comment_info.labelDoFlagImportant}' icon='thumb-up' />
+					<@operationButton idComment=comment.idComment context=(comment.name!) operation='flagImportant' title='#i18n{module.extend.comment.comment_info.labelDoFlagImportant}' icon='thumb-up' />
 				</#if>
 				<#if comment.pinned>
-					<@operationButton idComment=comment.idComment operation='cancelPin' color='danger' title='#i18n{module.extend.comment.comment_info.labelCancelPinned}' icon='pinned-off' />
+					<@operationButton idComment=comment.idComment context=(comment.name!) operation='cancelPin' color='danger' title='#i18n{module.extend.comment.comment_info.labelCancelPinned}' icon='pinned-off' />
 				<#else>
-					<@operationButton idComment=comment.idComment operation='pin' title='#i18n{module.extend.comment.comment_info.labelDoPinned}' icon='pin' />
+					<@operationButton idComment=comment.idComment context=(comment.name!) operation='pin' title='#i18n{module.extend.comment.comment_info.labelDoPinned}' icon='pin' />
 				</#if>
 				@Extender[${comment.idComment?c},Comment,rating,{show:"button"}]@
 				<#if comment.listWorkflowActions?? && comment.listWorkflowActions?size gt 0>
 					<#list comment.listWorkflowActions as action>
 						<#assign iconStyle = (action.icon.width != -1)?then({"width": action.icon.width?c}, {}) + (action.icon.height != -1)?then({"height": action.icon.height?c}, {})>
 						<@aButton color='link' href='${manageCommentsUrl}?view=confirmUpdateComment&idComment=${comment.idComment?c}&id_action=${action.id?c}&viewAllResources=${allResources?c}${fromUrlParam}' title=action.name hideTitle=['all']>
-							<@img url='image?resource_type=workflow_icon_img&id=${action.icon.id?c}' title=action.name alt=action.name params=iconStyle /> <@span class='ms-2'>${action.name}</@span>
+							<@img url='image?resource_type=workflow_icon_img&id=${action.icon.id?c}' alt='' params=iconStyle /> <@span class='ms-2'>${action.name}</@span>
 						</@aButton>
 					</#list>
 				</#if>
@@ -112,7 +112,7 @@
 			<@row class='mb-3'>
 				<article id="content_${comment.idComment?c}" class="col-10 col-sm-11"><@commentContent comment=comment /></article>
 				<aside class="col-2 col-sm-1 d-flex align-items-end">
-					<@button color='link' class='btn-copy-html' title='#i18n{module.extend.comment.comment_info.labelCopy}' hideTitle=['all'] buttonIcon='copy' params={"data-code": "#content_${comment.idComment?c}"} />
+					<@button color='link' class='btn-copy-html' title='#i18n{module.extend.comment.comment_info.labelCopy}' hideTitle=['all'] buttonIcon='copy' params={"data-code": "#content_${comment.idComment?c}", "aria-label": '#i18n{module.extend.comment.comment_info.labelCopy} ' + (comment.name!)} />
 				</aside>
 			</@row>
 			<@row class='mb-3 py-2 border-bottom'>
@@ -127,7 +127,7 @@
 							<#assign adminClass = subComment.isAdminComment?then('', ' comment')>
 							<@div class="d-flex justify-content-start align-items-center ${adminClass}">
 								<@div>
-									<@span class='badge ${subCommentIconBg} text-white me-2'><@icon style=subCommentIcon /></@span><@icon style='user' /> ${subComment.name!}
+									<@span class='badge ${subCommentIconBg} text-white me-2'><@icon style=subCommentIcon /><#if subComment.pinned><span class="visually-hidden">#i18n{module.extend.comment.comment_info.pinned}</span><#elseif subComment.isImportant><span class="visually-hidden">#i18n{module.extend.comment.comment_info.important}</span></#if><#if !subComment.published><span class="visually-hidden">#i18n{module.extend.comment.comment_info.labelUnpublished}</span></#if></@span><@icon style='user' /> ${subComment.name!}
 									<@span class='dt-comment'>${subComment.dateComment!?string["dd/MM/yyyy HH:mm"]}</@span>
 									<small>${subComment.email!}</small>
 								</@div>
@@ -136,12 +136,12 @@
 						<#assign subCommentActions>
 							<@div class='d-flex flex-wrap gap-1'>
 								<#if subComment.published>
-									<@operationButton idComment=subComment.idComment operation='unpublish' color='danger' size='sm' title='#i18n{module.extend.comment.comment_info.buttonUnpublish}' icon='toggle-right' />
+									<@operationButton idComment=subComment.idComment context=(subComment.name!) operation='unpublish' color='danger' size='sm' title='#i18n{module.extend.comment.comment_info.buttonUnpublish}' icon='toggle-right' />
 								<#else>
-									<@operationButton idComment=subComment.idComment operation='publish' size='sm' title='#i18n{module.extend.comment.comment_info.buttonPublish}' icon='toggle-left' />
+									<@operationButton idComment=subComment.idComment context=(subComment.name!) operation='publish' size='sm' title='#i18n{module.extend.comment.comment_info.buttonPublish}' icon='toggle-left' />
 								</#if>
 								<#assign subDeleteHref = '${manageCommentsUrl}?view=confirmRemoveComment&idComment=${subComment.idComment?c}&viewAllResources=${allResources?c}${fromUrlParam}'>
-								<@aButton color='danger' size='sm' href=subDeleteHref title='#i18n{portal.util.labelDelete}' hideTitle=['all'] buttonIcon='trash' />
+								<@aButton color='danger' size='sm' href=subDeleteHref title='#i18n{portal.util.labelDelete}' hideTitle=['all'] buttonIcon='trash' params={"aria-label": '#i18n{portal.util.labelDelete} ' + (subComment.name!)} />
 								<#if 0 < subComment.firstUnpublishedSubComment>
 									<#assign unpublishedHref = (postBackUrl!) + (postBackUrl!)?contains('?')?then('&', '?') + 'extenderType=comment&idExtendableResource=${idExtendableResource?url}&extendableResourceType=${extendableResourceType?url}&idComment=${subComment.idComment?c}${fromUrlParam}#comment_${subComment.firstUnpublishedSubComment?c}'>
 									<@aButton color='warning' size='sm' href=unpublishedHref title='#i18n{module.extend.comment.comment_info.unpublishedSubComments}' />
@@ -153,7 +153,7 @@
 							<@row>
 								<article id="content_${subComment.idComment?c}" class="col-10 col-sm-11"><@commentContent comment=subComment /></article>
 								<aside class="col-2 col-sm-1 d-flex align-items-end">
-									<@button color='link' class='btn-copy-html' title='#i18n{module.extend.comment.comment_info.labelCopy}' hideTitle=['all'] buttonIcon='copy' params={"data-code": "#content_${subComment.idComment?c}"} />
+									<@button color='link' class='btn-copy-html' title='#i18n{module.extend.comment.comment_info.labelCopy}' hideTitle=['all'] buttonIcon='copy' params={"data-code": "#content_${subComment.idComment?c}", "aria-label": '#i18n{module.extend.comment.comment_info.labelCopy} ' + (subComment.name!)} />
 								</aside>
 							</@row>
 							<@row>

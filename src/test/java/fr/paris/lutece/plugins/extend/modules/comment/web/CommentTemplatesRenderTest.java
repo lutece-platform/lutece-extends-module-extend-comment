@@ -375,7 +375,7 @@ public class CommentTemplatesRenderTest
 
     /**
      * The back office list of the comments: contents as in the front office, links escaped once, the size of a workflow
-     * action icon given as attributes.
+     * action icon given as attributes, the row actions named with the author of the comment.
      *
      * @throws Exception
      *             if the rendering fails
@@ -404,7 +404,8 @@ public class CommentTemplatesRenderTest
         assertTrue( strHtml.contains( RICH ), strHtml );
         assertTrue( strHtml.contains( "href=\"jsp/admin/plugins/extend/modules/comment/ManageComments.jsp?view=confirmRemoveComment&amp;idComment=1234"
                 + "&amp;viewAllResources=false&amp;from_url=jsp%2Fadmin%2FPage.jsp%3Fa%3D1%2526b%3D2\"" ), strHtml );
-        assertTrue( strHtml.contains( "<img src=\"image?resource_type=workflow_icon_img&amp;id=9\" alt=\"Publish &lt;now&gt;\" width=\"16\">" ), strHtml );
+        assertTrue( strHtml.contains( "<img src=\"image?resource_type=workflow_icon_img&amp;id=9\" alt=\"\" width=\"16\">" ), strHtml );
+        assertTrue( strHtml.contains( "aria-label=\"#i18n{portal.util.labelDelete} Jane &lt;i&gt;Doe&lt;/i&gt;\"" ), strHtml );
         assertTrue( strHtml.contains( "data-code=\"#content_1234\"" ), strHtml );
         assertFalse( strHtml.contains( "&amp;amp;" ), strHtml );
     }
