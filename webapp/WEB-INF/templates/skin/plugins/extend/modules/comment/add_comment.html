@@ -90,7 +90,7 @@
 				<@cIcon name='check' />
 			</@cBtn>
 			<#if addCommentPosition = 0>
-				<@cBtn label='#i18n{portal.util.labelBack}' class='secondary btn-sm' type='button' params='onclick="history.back( )"' />
+				<@cBtn label='#i18n{portal.util.labelBack}' class='secondary btn-sm' href='jsp/site/Portal.jsp?page=extend-comment&idExtendableResource=${(idExtendableResource!)?url}&extendableResourceType=${(extendableResourceType!)?url}' params={"data-lutece-action": "back"} />
 			</#if>
 		</@cBlock>
 	</@cForm>

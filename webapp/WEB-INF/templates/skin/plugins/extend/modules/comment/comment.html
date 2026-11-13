@@ -1,17 +1,18 @@
-<#assign resourceParams>idExtendableResource=${idExtendableResource!}&amp;extendableResourceType=${extendableResourceType!}</#assign>
+<#include "/skin/plugins/extend/modules/comment/comment_content.html" />
+<#assign resourceQuery = 'idExtendableResource=${(idExtendableResource!)?url}&extendableResourceType=${(extendableResourceType!)?url}'>
 <#macro commentLinks>
-	<@cBtn label='#i18n{module.extend.comment.comment.labelViewComments}' class='primary btn-sm' href='jsp/site/Portal.jsp?page=extend-comment&amp;${resourceParams}'>
+	<@cBtn label='#i18n{module.extend.comment.comment.labelViewComments}' class='primary btn-sm' href='jsp/site/Portal.jsp?page=extend-comment&${resourceQuery}'>
 		<@cIcon name='eye' />
 	</@cBtn>
 	<#if addCommentPosition = 0>
-		<@cBtn label='#i18n{module.extend.comment.comment.labelAddComment}' class='primary btn-sm' href='jsp/site/Portal.jsp?page=extend-comment&amp;action=addComment&amp;${resourceParams}'>
+		<@cBtn label='#i18n{module.extend.comment.comment.labelAddComment}' class='primary btn-sm' href='jsp/site/Portal.jsp?page=extend-comment&action=addComment&${resourceQuery}'>
 			<@cIcon name='plus' />
 		</@cBtn>
 	</#if>
 </#macro>
 <#macro deleteButton idComment>
 	<@cBlock class='float-end'>
-		<@cBtn label='' class='danger btn-sm' href='jsp/site/Portal.jsp?page=extend-comment&amp;action=confirmRemoveComment&amp;${resourceParams}&amp;idComment=${idComment}' params='title="#i18n{portal.util.labelDelete}"'>
+		<@cBtn label='' class='danger btn-sm' href='jsp/site/Portal.jsp?page=extend-comment&action=confirmRemoveComment&${resourceQuery}&idComment=${idComment?c}' params={"title": "#i18n{portal.util.labelDelete}"}>
 			<@cIcon name='trash' title='#i18n{portal.util.labelDelete}' />
 		</@cBtn>
 	</@cBlock>
@@ -28,26 +29,22 @@
 			<@cCard class='mb-3'>
 				<@cTitle level=3 class='h5'>
 					#i18n{module.extend.comment.view_comments.labelPosted} ${comment.dateComment!} #i18n{module.extend.comment.view_comments.labelBy} ${comment.name!}
-					<#if comment.isAdminComment><@cBlock>${adminBadge!}</@cBlock></#if>
+					<#if comment.isAdminComment><@cBlock>${richText(adminBadge!)}</@cBlock></#if>
 				</@cTitle>
 				<#if registeredUserEmail?? && comment.email == registeredUserEmail && comment.numberSubComments <= 0 && canDeleteComments?has_content && canDeleteComments>
 					<@deleteButton idComment=comment.idComment />
 				</#if>
 				<@cBlock class='float-end'>
-					@Extender[${comment.idComment},Comment,rating,{show:"vote"}]@
+					@Extender[${comment.idComment?c},Comment,rating,{show:"vote"}]@
 				</@cBlock>
 				<@cText>
 					<#if comment.avatarUrl?has_content>
-						<@cImg src=comment.avatarUrl class='avatar' alt=comment.name! params='title="${comment.name!}"' />
+						<@cImg src=comment.avatarUrl class='avatar' alt=comment.name! params={"title": (comment.name!)} />
 					</#if>
-					<#if use_bbcode>
-						${comment.BBCodeComment!}
-					<#else>
-						${comment.comment!}
-					</#if>
+					<@commentContent comment=comment useBBCode=use_bbcode />
 				</@cText>
 				<#if 0 < comment.numberSubComments && comment.listSubComments?? && 0 < comment.listSubComments?size && displaySubComments>
-					<details<#if idComment?? && comment.idComment?string == idComment> open</#if>>
+					<details<#if idComment?? && comment.idComment?c == idComment> open</#if>>
 						<summary>#i18n{module.extend.comment.comment_info.publishedSubComments} (${comment.numberSubComments})</summary>
 						<#list comment.listSubComments as subComment>
 							<@cBlock class='border-start border-3 ps-3 my-3'>
@@ -55,17 +52,13 @@
 									<strong>#i18n{module.extend.comment.view_comments.labelPosted} ${subComment.dateComment!} #i18n{module.extend.comment.view_comments.labelBy} ${subComment.name!}</strong>
 								</@cText>
 								<#if subComment.isAdminComment>
-									<@cBlock>${adminBadge!}</@cBlock>
+									<@cBlock>${richText(adminBadge!)}</@cBlock>
 								</#if>
 								<#if registeredUserEmail?? && subComment.email == registeredUserEmail && subComment.numberSubComments <= 0 && canDeleteComments?has_content && canDeleteComments>
 									<@deleteButton idComment=subComment.idComment />
 								</#if>
 								<@cBlock class='bg-light p-2'>
-									<#if use_bbcode>
-										${subComment.BBCodeComment!}
-									<#else>
-										${subComment.comment!}
-									</#if>
+									<@commentContent comment=subComment useBBCode=use_bbcode />
 								</@cBlock>
 							</@cBlock>
 						</#list>
@@ -75,7 +68,7 @@
 			<#if allowSubComments && myLuteceUser??>
 				<#assign formSuffix = comment.idComment?c>
 				<@cBlock class='mb-3'>
-					<@cBtn label='#i18n{module.extend.comment.view_comments.labelAnswerComment}' class='primary btn-sm' type='button' params='data-bs-toggle="collapse" data-bs-target="#addComment_${formSuffix}" aria-expanded="false" aria-controls="addComment_${formSuffix}"'>
+					<@cBtn label='#i18n{module.extend.comment.view_comments.labelAnswerComment}' class='primary btn-sm' type='button' params={"data-bs-toggle": "collapse", "data-bs-target": "#addComment_${formSuffix}", "aria-expanded": "false", "aria-controls": "addComment_${formSuffix}"}>
 						<@cIcon name='plus' />
 					</@cBtn>
 				</@cBlock>
@@ -84,7 +77,7 @@
 						<@cInput type='hidden' name='page' value='extend-comment' id='page-${formSuffix}' />
 						<@cInput type='hidden' name='action' value='doAddComment' id='action-${formSuffix}' />
 						<@cInput type='hidden' name='token' value='${token!}' id='token-${formSuffix}' />
-						<@cInput type='hidden' name='idParentComment' value='${comment.idComment!}' id='idParentComment-${formSuffix}' />
+						<@cInput type='hidden' name='idParentComment' value=comment.idComment?c id='idParentComment-${formSuffix}' />
 						<#if returnToCommentList?? && returnToCommentList>
 							<@cInput type='hidden' name='returnToCommentList' value='true' id='returnToCommentList-${formSuffix}' />
 						</#if>
@@ -112,7 +105,7 @@
 						<@cBlock class='d-flex gap-2 mt-3'>
 							<@cBtn label='#i18n{portal.util.labelValidate}' class='primary btn-sm' type='submit' />
 							<#if addCommentPosition = 0>
-								<@cBtn label='#i18n{portal.util.labelBack}' class='secondary btn-sm' type='button' params='onclick="history.back( )"' />
+								<@cBtn label='#i18n{portal.util.labelBack}' class='secondary btn-sm' href='jsp/site/Portal.jsp?page=extend-comment&${resourceQuery}' params={"data-lutece-action": "back"} />
 							</#if>
 						</@cBlock>
 					</@cForm>

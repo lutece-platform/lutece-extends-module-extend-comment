@@ -1,9 +1,10 @@
 <#include "/admin/util/editor/editor.html" />
-<#assign actionUrl>jsp/admin/plugins/extend/modules/comment/ManageComments.jsp<#if idComment?? && idComment?has_content>#comment_${idComment}</#if></#assign>
+<#assign actionUrl = 'jsp/admin/plugins/extend/modules/comment/ManageComments.jsp' + (idComment?? && idComment?has_content)?then('#comment_${idComment!}', '')>
+<#assign backUrl = 'jsp/admin/plugins/extend/ViewExtenderInfo.jsp?extenderType=comment&idExtendableResource=${(idExtendableResource!)?url}&extendableResourceType=${(extendableResourceType!)?url}'>
 <@pageContainer>
 	<@pageColumn>
 		<@pageHeader title='#i18n{module.extend.comment.create_comment.pageTitle}'>
-			<@button type='button' title='#i18n{portal.util.labelBack}' color='light' buttonIcon='arrow-left' params='onclick="history.back( )"' />
+			<@aButton href=backUrl title='#i18n{portal.util.labelBack}' color='light' buttonIcon='arrow-left' params={"data-lutece-action": "back"} />
 		</@pageHeader>
 		<@tform action=actionUrl boxed=true>
 			<@input type='hidden' name='action' value='createComment' />
@@ -20,7 +21,7 @@
 			</@formGroup>
 			<@formGroup rows=2>
 				<@button type='submit' title='#i18n{portal.util.labelValidate}' color='primary' buttonIcon='check' />
-				<@button type='button' title='#i18n{portal.util.labelCancel}' color='light' buttonIcon='x' params='onclick="history.back( )"' />
+				<@aButton href=backUrl title='#i18n{portal.util.labelCancel}' color='light' buttonIcon='x' params={"data-lutece-action": "back"} />
 			</@formGroup>
 		</@tform>
 	</@pageColumn>

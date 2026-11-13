@@ -10,7 +10,7 @@
 		<#list comments_publidashboard as comment>
 			<@cTr>
 				<@cTd>${comment.dateComment}</@cTd>
-				<@cTd>${comment.comment}</@cTd>
+				<@cTd><#list comment.commentLines as line>${line}<#sep><br></#sep></#list></@cTd>
 			</@cTr>
 		</#list>
 	</@cTbody>

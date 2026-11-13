@@ -8,7 +8,7 @@
     <@span>
         <@icon style='comments' /> #i18n{module.extend.comment.extender.comment.label}
     </@span> 
-    <@link class='' href='jsp/admin/resource/DoProcessExtendableResourceAction.jsp?manageComments=manageComments&amp;extendableResourceType=${extendableResourceType!}&amp;idExtendableResource=${idExtendableResource!}' title='#i18n{module.extend.comment.manage_comments.labelManageComments}' target='preview' params=' style="float: none;"' >
+    <@link class='float-none' href='jsp/admin/resource/DoProcessExtendableResourceAction.jsp?manageComments=manageComments&extendableResourceType=${(extendableResourceType!)?url}&idExtendableResource=${(idExtendableResource!)?url}' title='#i18n{module.extend.comment.manage_comments.labelManageComments}' target='preview'>
         <@icon style='comments text-primary' prefix='far fa-' /> 
     </@link>
     </@createExtenderFromResource>
