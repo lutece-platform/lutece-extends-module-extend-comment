@@ -8,7 +8,7 @@
 			${tasks_form!}
 			<@formGroup rows=2>
 				<@button type='submit' title='#i18n{portal.util.labelValidate}' color='primary' buttonIcon='check' />
-				<@button type='button' title='#i18n{portal.util.labelCancel}' color='light' buttonIcon='x' params='onclick="history.back( )"' />
+				<@aButton href='jsp/admin/plugins/extend/ViewExtenderInfo.jsp' title='#i18n{portal.util.labelCancel}' color='light' buttonIcon='x' params={"data-lutece-action": "back"} />
 			</@formGroup>
 		</@tform>
 	</@pageColumn>

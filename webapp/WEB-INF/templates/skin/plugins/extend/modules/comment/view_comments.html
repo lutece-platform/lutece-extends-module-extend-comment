@@ -1,15 +1,16 @@
 <#assign listComments = paginator.pageItems>
-<#assign postBackSeparator = postBackUrl?contains('?')?then('&amp;', '?')>
-<#assign resourceParams>idExtendableResource=${idExtendableResource!}&amp;extendableResourceType=${extendableResourceType!}</#assign>
+<#include "/skin/plugins/extend/modules/comment/comment_content.html" />
+<#assign postBackSeparator = postBackUrl?contains('?')?then('&', '?')>
+<#assign resourceQuery = 'idExtendableResource=${(idExtendableResource!)?url}&extendableResourceType=${(extendableResourceType!)?url}'>
 <#assign hasFromUrl = from_url?? && from_url?has_content && from_url != "null">
-<#assign fromSessionParam = hasFromUrl?then('&amp;from_url=from_session', '')>
+<#assign fromSessionParam = hasFromUrl?then('&from_url=from_session', '')>
 <#macro commentToolbar>
 	<@cBlock class='d-flex flex-wrap align-items-center gap-2 my-3'>
-		<@cBtn label='#i18n{module.extend.comment.view_comments.labelAddComment}' class='primary btn-sm' href='jsp/site/Portal.jsp?page=extend-comment&amp;action=addComment&amp;${resourceParams}&amp;returnToCommentList=true${fromSessionParam}'>
+		<@cBtn label='#i18n{module.extend.comment.view_comments.labelAddComment}' class='primary btn-sm' href='jsp/site/Portal.jsp?page=extend-comment&action=addComment&${resourceQuery}&returnToCommentList=true${fromSessionParam}'>
 			<@cIcon name='plus' />
 		</@cBtn>
 		<#if hasFromUrl>
-			<@cBtn label='#i18n{portal.util.labelBack}' class='secondary btn-sm' href=from_url?replace("%26","&amp;") />
+			<@cBtn label='#i18n{portal.util.labelBack}' class='secondary btn-sm' href=safeUrl(from_url?replace("%26", "&")) />
 		</#if>
 	</@cBlock>
 </#macro>
@@ -21,34 +22,34 @@
 		<@cBlock class='d-flex flex-wrap align-items-center justify-content-between gap-2'>
 			<@cText>
 				<strong>#i18n{module.extend.comment.view_comments.sortedByDate}</strong>
-				<#assign sortUrl>${postBackUrl}${postBackSeparator}${resourceParams}&amp;from_url=from_session&amp;sorted_attribute_name=date&amp;asc_sort=</#assign>
+				<#assign sortUrl = '${postBackUrl}${postBackSeparator}${resourceQuery}&from_url=from_session&sorted_attribute_name=date&asc_sort='>
 				<@cLink href='${sortUrl}true' label='' title='#i18n{portal.util.sort.asc}'><@cIcon name='sort-ascending' title='#i18n{portal.util.sort.asc}' /></@cLink>
 				<@cLink href='${sortUrl}false' label='' title='#i18n{portal.util.sort.desc}'><@cIcon name='sort-descending' title='#i18n{portal.util.sort.desc}' /></@cLink>
 			</@cText>
-			<@cForm class='d-flex gap-2' action='${postBackUrl}${postBackSeparator}${resourceParams}&amp;asc_sort=${asc_sort!}'>
+			<@cForm class='d-flex gap-2' action='${postBackUrl}${postBackSeparator}${resourceQuery}&asc_sort=${(asc_sort!)?url}'>
 				<@paginationSiteItemCount paginator=paginator combo=1 nb_items_per_page=paginator.itemsPerPage?string />
 				<#if hasFromUrl>
-					<@cInput type='hidden' name='from_url' value='${from_url!}' />
+					<@cInput type='hidden' name='from_url' value=from_url />
 				</#if>
 			</@cForm>
 		</@cBlock>
 		<@cPagination paginator=paginator />
 		<#if listComments?? && listComments?has_content>
 			<#list listComments as comment>
-				<@cCard class='mb-3' id='comment_${comment.idComment!}'>
+				<@cCard class='mb-3' id='comment_${comment.idComment?c}'>
 					<@cBlock class='d-flex flex-wrap justify-content-between gap-2'>
 						<@cTitle level=3 class='h5'>
 							#i18n{module.extend.comment.view_comments.labelPosted} ${comment.dateComment!} #i18n{module.extend.comment.view_comments.labelBy} ${comment.name!}
-							<#if comment.isAdminComment>${adminBadge!}</#if>
+							<#if comment.isAdminComment>${richText(adminBadge!)}</#if>
 						</@cTitle>
 						<#if allowSubComments>
 							<@cBlock class='d-flex gap-2'>
 								<#if registeredUserEmail?? && comment.email == registeredUserEmail && comment.numberSubComments <= 0 && canDeleteComments?has_content && canDeleteComments>
-									<@cBtn label='' class='danger btn-sm' href='jsp/site/Portal.jsp?page=extend-comment&amp;action=confirmRemoveComment&amp;${resourceParams}&amp;idComment=${comment.idComment}' params='title="#i18n{portal.util.labelDelete}"'>
+									<@cBtn label='' class='danger btn-sm' href='jsp/site/Portal.jsp?page=extend-comment&action=confirmRemoveComment&${resourceQuery}&idComment=${comment.idComment?c}' params={"title": "#i18n{portal.util.labelDelete}"}>
 										<@cIcon name='trash' title='#i18n{portal.util.labelDelete}' />
 									</@cBtn>
 								</#if>
-								<@cBtn label='#i18n{module.extend.comment.view_comments.labelAnswerComment}' class='primary btn-sm' href='jsp/site/Portal.jsp?page=extend-comment&amp;action=addComment&amp;${resourceParams}&amp;idComment=${comment.idComment!}${fromSessionParam}'>
+								<@cBtn label='#i18n{module.extend.comment.view_comments.labelAnswerComment}' class='primary btn-sm' href='jsp/site/Portal.jsp?page=extend-comment&action=addComment&${resourceQuery}&idComment=${comment.idComment?c}${fromSessionParam}'>
 									<@cIcon name='plus' />
 								</@cBtn>
 							</@cBlock>
@@ -58,20 +59,16 @@
 						<@cText><strong>#i18n{module.extend.comment.view_comments.labelLastModified} ${comment.dateLastModif!}</strong></@cText>
 					</#if>
 					<@cBlock class='float-end'>
-						@Extender[${comment.idComment},Comment,rating,{show:"all"}]@
+						@Extender[${comment.idComment?c},Comment,rating,{show:"all"}]@
 					</@cBlock>
 					<@cBlock>
 						<#if comment.avatarUrl?has_content>
-							<@cImg src=comment.avatarUrl class='avatar' alt=comment.name! params='title="${comment.name!}"' />
+							<@cImg src=comment.avatarUrl class='avatar' alt=comment.name! params={"title": (comment.name!)} />
 						</#if>
-						<#if use_bbcode>
-							${comment.BBCodeComment!}
-						<#else>
-							${comment.comment!}
-						</#if>
+						<@commentContent comment=comment useBBCode=use_bbcode />
 					</@cBlock>
 					<#if comment.listSubComments?? && 0 < comment.listSubComments?size>
-						<details<#if idComment?? && comment.idComment?string == idComment> open</#if>>
+						<details<#if idComment?? && comment.idComment?c == idComment> open</#if>>
 							<summary>#i18n{module.extend.comment.comment_info.displaySubComments}</summary>
 							<#list comment.listSubComments as subComment>
 								<@cBlock class='border-start border-3 ps-3 my-3'>
@@ -82,21 +79,17 @@
 										<@cText>#i18n{module.extend.comment.view_comments.labelLastModified} ${subComment.dateLastModif!}</@cText>
 									</#if>
 									<#if subComment.isAdminComment>
-										<@cBlock>${adminBadge!}</@cBlock>
+										<@cBlock>${richText(adminBadge!)}</@cBlock>
 									</#if>
 									<#if registeredUserEmail?? && subComment.email == registeredUserEmail && subComment.numberSubComments <= 0 && canDeleteComments?has_content && canDeleteComments>
 										<@cBlock class='float-end'>
-											<@cBtn label='' class='danger btn-sm' href='jsp/site/Portal.jsp?page=extend-comment&amp;action=confirmRemoveComment&amp;${resourceParams}&amp;idComment=${subComment.idComment}' params='title="#i18n{portal.util.labelDelete}"'>
+											<@cBtn label='' class='danger btn-sm' href='jsp/site/Portal.jsp?page=extend-comment&action=confirmRemoveComment&${resourceQuery}&idComment=${subComment.idComment?c}' params={"title": "#i18n{portal.util.labelDelete}"}>
 												<@cIcon name='trash' title='#i18n{portal.util.labelDelete}' />
 											</@cBtn>
 										</@cBlock>
 									</#if>
 									<@cBlock class='bg-light p-2'>
-										<#if use_bbcode>
-											${subComment.BBCodeComment!}
-										<#else>
-											${subComment.comment!}
-										</#if>
+										<@commentContent comment=subComment useBBCode=use_bbcode />
 									</@cBlock>
 								</@cBlock>
 							</#list>

@@ -2,13 +2,13 @@
 <@cContainer>
 <@cRow>
 	<@cCol>
-		<@cAlert type='success'>${message_comment_created!}</@cAlert>
+		<@cAlert type='success'>${richText(message_comment_created!)}</@cAlert>
 		<#if (returnToCommentList?? && returnToCommentList) || !(from_url??)>
-			<#assign backUrl>${postBackUrl}<#if postBackUrl?contains('?')>&amp;<#else>?</#if>idExtendableResource=${idExtendableResource}&amp;extendableResourceType=${extendableResourceType}&amp;idComment=${idComment!}&amp;from_url=from_session<#if idComment??>#comment_${idComment!}</#if></#assign>
+			<#assign backUrl = postBackUrl + postBackUrl?contains('?')?then('&', '?') + 'idExtendableResource=${idExtendableResource?url}&extendableResourceType=${extendableResourceType?url}&idComment=${(idComment?c)!}&from_url=from_session' + (idComment??)?then('#comment_${(idComment?c)!}', '')>
 		<#else>
 			<#assign backUrl = from_url>
 		</#if>
-		<@cBtn label='#i18n{portal.util.labelBack}' class='secondary btn-sm' href=backUrl>
+		<@cBtn label='#i18n{portal.util.labelBack}' class='secondary btn-sm' href=safeUrl(backUrl)>
 			<@cIcon name='arrow-left' />
 		</@cBtn>
 	</@cCol>

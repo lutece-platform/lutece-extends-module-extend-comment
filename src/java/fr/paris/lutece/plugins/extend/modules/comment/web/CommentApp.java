@@ -70,6 +70,7 @@ import fr.paris.lutece.portal.service.content.XPageAppService;
 import fr.paris.lutece.portal.service.i18n.I18nService;
 import fr.paris.lutece.portal.service.mail.MailService;
 import fr.paris.lutece.portal.service.mailinglist.AdminMailingListService;
+import fr.paris.lutece.portal.service.message.MessageHtml;
 import fr.paris.lutece.portal.service.message.SiteMessage;
 import fr.paris.lutece.portal.service.message.SiteMessageException;
 import fr.paris.lutece.portal.service.message.SiteMessageService;
@@ -81,6 +82,7 @@ import fr.paris.lutece.portal.service.security.ISecurityTokenService;
 import fr.paris.lutece.portal.service.security.SecurityTokenService;
 import fr.paris.lutece.portal.service.security.UserNotSignedException;
 import fr.paris.lutece.portal.service.template.AppTemplateService;
+import fr.paris.lutece.portal.service.template.HtmlMarkup;
 import fr.paris.lutece.portal.service.util.AppLogService;
 import fr.paris.lutece.portal.service.util.AppPathService;
 import fr.paris.lutece.portal.util.mvc.utils.MVCUtils;
@@ -467,7 +469,8 @@ public class CommentApp implements XPageApplication
 
             if ( bIsCaptchaEnabled )
             {
-                model.put( MARK_CAPTCHA, _captchaService.get( ).getHtmlCode( ) );
+                // HTML of the captcha service, written as is by the comment form
+                model.put( MARK_CAPTCHA, HtmlMarkup.of( _captchaService.get( ).getHtmlCode( ) ) );
             }
 
             if ( SecurityService.isAuthenticationEnable( ) )
@@ -543,8 +546,9 @@ public class CommentApp implements XPageApplication
 
         if ( constraintViolations.size( ) > 0 )
         {
+            // The messages of the constraints, separated by line breaks
             Object [ ] params = {
-                    buildStopMessage( constraintViolations )
+                    MessageHtml.of( buildStopMessage( constraintViolations ) )
             };
 
             SiteMessageService.setMessage( request, MESSAGE_STOP_GENERIC_MESSAGE, params, SiteMessage.TYPE_STOP );
@@ -815,7 +819,7 @@ public class CommentApp implements XPageApplication
      *            the generic type
      * @param listErrors
      *            the list errors
-     * @return the string
+     * @return the HTML of the message, to pass to a message as {@code MessageHtml.of( ... )}
      */
     private static <A> String buildStopMessage( Set<ConstraintViolation<A>> listErrors )
     {

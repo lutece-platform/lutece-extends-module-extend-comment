@@ -1,0 +1,10 @@
+<#--
+-- Writes the content of a comment.
+-- A comment written with the rich text editor, or answered from the back office, is HTML sanitized when it is rendered;
+-- a comment typed in the plain editor is text, written line by line.
+-- @param comment the comment
+-- @param useBBCode true when the comments are written with the rich text editor
+-->
+<#macro commentContent comment useBBCode=false>
+<#if useBBCode>${richText(comment.BBCodeComment!)}<#elseif comment.isAdminComment>${richText(comment.comment!)}<#else><#list comment.commentLines as line>${line}<#sep><br></#sep></#list></#if>
+</#macro>

@@ -82,6 +82,7 @@ import fr.paris.lutece.portal.service.security.SecurityTokenService;
 import fr.paris.lutece.plugins.extend.modules.comment.web.CommentApp;
 import fr.paris.lutece.portal.service.util.BeanUtils;
 import fr.paris.lutece.portal.service.template.AppTemplateService;
+import fr.paris.lutece.portal.service.template.HtmlMarkup;
 import fr.paris.lutece.portal.service.util.AppPathService;
 import fr.paris.lutece.portal.service.workflow.WorkflowService;
 import fr.paris.lutece.portal.web.constants.Parameters;
@@ -216,7 +217,8 @@ public class CommentResourceExtenderComponent extends AbstractResourceExtenderCo
 
             if ( bIsCaptchaEnabled )
             {
-                model.put( CommentConstants.MARK_CAPTCHA, _captchaService.get( ).getHtmlCode( ) );
+                // HTML of the captcha service, written as is by the comment form
+                model.put( CommentConstants.MARK_CAPTCHA, HtmlMarkup.of( _captchaService.get( ).getHtmlCode( ) ) );
             }
             // Add NickName if auth mod enable
             if ( config != null && config.isEnabledAuthMode( ) )

@@ -66,6 +66,7 @@ import fr.paris.lutece.portal.business.user.AdminUser;
 import fr.paris.lutece.portal.service.i18n.I18nService;
 import fr.paris.lutece.portal.service.message.AdminMessage;
 import fr.paris.lutece.portal.service.message.AdminMessageService;
+import fr.paris.lutece.portal.service.template.HtmlMarkup;
 import fr.paris.lutece.portal.service.util.AppException;
 import fr.paris.lutece.portal.service.util.AppLogService;
 import fr.paris.lutece.portal.service.util.AppPathService;
@@ -417,7 +418,8 @@ public class CommentJspBean extends MVCAdminJspBean
 
         model.put( CommentConstants.PARAMETER_ID_ACTION, strIdAction );
         model.put( CommentConstants.PARAMETER_ID_COMMENT, Integer.toString( comment.getIdComment( ) ) );
-        model.put( MARK_TASK_FORM, strHtmlTasksForm );
+        // HTML of the task components of the workflow
+        model.put( MARK_TASK_FORM, HtmlMarkup.of( strHtmlTasksForm ) );
 
         return getPage( MESSAGE_TITLE_TASKS_FORM_WORKFLOW, TEMPLATE_TASKS_FORM_WORKFLOW, model );
     }

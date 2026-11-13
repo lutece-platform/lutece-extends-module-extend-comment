@@ -35,8 +35,10 @@ package fr.paris.lutece.plugins.extend.modules.comment.business;
 
 import java.security.GeneralSecurityException;
 import java.sql.Timestamp;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import jakarta.enterprise.inject.spi.CDI;
 import jakarta.validation.constraints.NotNull;
@@ -60,6 +62,7 @@ public class Comment implements IExtendableResourceResult
 {
     public static final int COMMENT_STATE_PUBLISHED = 1;
     public static final int COMMENT_STATE_UN_PUBLISHED = 0;
+    private static final Pattern PATTERN_LINE_BREAK = Pattern.compile( "<br */?>\\r?\\n?|\\r\\n|\\r|\\n", Pattern.CASE_INSENSITIVE );
     private String _strLuteceUserName;
     private int _nIdComment;
     @NotNull
@@ -225,6 +228,21 @@ public class Comment implements IExtendableResourceResult
     public void setComment( String strComment )
     {
         _strComment = strComment;
+    }
+
+    /**
+     * Get the lines of a comment typed as plain text, for a template that writes each line as text and the line breaks
+     * as HTML. The front office stores the line breaks as {@code <br />}: they are read as line breaks too.
+     *
+     * @return the lines of the comment, empty when there is no comment
+     */
+    public List<String> getCommentLines( )
+    {
+        if ( StringUtils.isEmpty( _strComment ) )
+        {
+            return List.of( );
+        }
+        return Arrays.asList( PATTERN_LINE_BREAK.split( _strComment, -1 ) );
     }
 
     /**

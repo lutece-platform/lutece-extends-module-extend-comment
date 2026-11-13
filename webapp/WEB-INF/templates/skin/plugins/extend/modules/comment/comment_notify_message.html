@@ -9,7 +9,7 @@
 	#i18n{module.extend.comment.comment_notify_message.labelMessageComment} ${resourceExtenderName!} : 
 	<br />
 	<br />
-	<em>${comment.comment!}</em>
+	<em><#list comment.commentLines as line>${line}<#sep><br /></#sep></#list></em>
 	<p>
 		#i18n{module.extend.comment.comment_notify_message.labelUrl} <a href="${resourceExtenderUrl!}">#i18n{module.extend.comment.comment_notify_message.labelHere}</a>.
 	</p>
