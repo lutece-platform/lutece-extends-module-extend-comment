@@ -2,35 +2,35 @@
 <h2>#i18n{module.extend.comment.comment_config.pageTitle}</h2>
 <@row>
 	<@columns md=6 lg=4 xl=3>
-		<@formGroup rows=2 labelKey='#i18n{module.extend.comment.comment_config.labelModerated}' >
+		<@fieldSet legend='#i18n{module.extend.comment.comment_config.labelModerated}' legendClass='form-label'>
 			<@radioButton name='moderated' id='modOk' value='true' labelKey='#i18n{portal.util.labelYes}' labelFor='modOk' orientation='' checked=commentConfig.moderated /> 
 			<@radioButton name='moderated' id='modNOk' value='false' labelKey='#i18n{portal.util.labelNo}' labelFor='modNOk' orientation='' checked=!commentConfig.moderated /> 
-		</@formGroup>
+		</@fieldSet>
 		<@formGroup rows=2 labelKey='#i18n{module.extend.comment.comment_config.labelNbComments}' labelFor='nbComments' >
 			<@input type='number' name='nbComments' value='${commentConfig.nbComments!}' maxlength=2 min=1  />
 		</@formGroup>
-		<@formGroup rows=2 labelKey='#i18n{module.extend.comment.comment_config.labelAuthorizeSubComments}' >
+		<@fieldSet legend='#i18n{module.extend.comment.comment_config.labelAuthorizeSubComments}' legendClass='form-label'>
 			<@radioButton name='authorizeSubComments' id='authorizeSubCommentsOk' value='true' labelKey='#i18n{portal.util.labelYes}' labelFor='authorizeSubCommentsOk' orientation='' checked=commentConfig.authorizeSubComments /> 
 			<@radioButton name='authorizeSubComments' id='authorizeSubCommentsNOk' value='false' labelKey='#i18n{portal.util.labelNo}' labelFor='authorizeSubCommentsNOk' orientation='' checked=!commentConfig.authorizeSubComments /> 
-		</@formGroup>
-		<@formGroup rows=2 labelKey='#i18n{module.extend.comment.comment_config.labelShowComments}' labelFor='displaySubComments' >
+		</@fieldSet>
+		<@fieldSet legend='#i18n{module.extend.comment.comment_config.labelShowComments}' legendClass='form-label'>
 			<@radioButton name='displaySubComments' id='displaySubCommentsOk' value='true' labelKey='#i18n{portal.util.labelYes}' labelFor='displaySubCommentsOk' orientation='' checked=commentConfig.displaySubComments /> 
 			<@radioButton name='displaySubComments' id='displaySubCommentsNOk' value='false' labelKey='#i18n{portal.util.labelNo}' labelFor='displaySubCommentsNOk' orientation='' checked=!commentConfig.displaySubComments /> 
-		</@formGroup>
-		<@formGroup rows=2 labelKey='#i18n{module.extend.comment.comment_config.labelTriComments}' labelFor='triCommentsByCreation' >
+		</@fieldSet>
+		<@fieldSet legend='#i18n{module.extend.comment.comment_config.labelTriComments}' legendClass='form-label'>
 			<@radioButton name='triCommentsByCreation' id='triCommentsByCreationOk' value='false' labelKey='#i18n{module.extend.comment.comment_config.labelTriCommentsParDateModification}' labelFor='triCommentsByCreationOk' orientation='' checked=!commentConfig.triCommentsByCreation /> 
 			<@radioButton name='triCommentsByCreation' id='triCommentsByCreationNOk' value='true' labelKey='#i18n{module.extend.comment.comment_config.labelTriCommentsParDateCreation}' labelFor='triCommentsByCreationNOk' orientation='' checked=commentConfig.triCommentsByCreation /> 
-		</@formGroup>
-		<@formGroup rows=2 labelKey='#i18n{module.extend.comment.comment_config.labelEnabledDeleteComments}' labelFor='deleteComments' >
+		</@fieldSet>
+		<@fieldSet legend='#i18n{module.extend.comment.comment_config.labelEnabledDeleteComments}' legendClass='form-label'>
 			<@radioButton name='deleteComments' id='extend-comment-delete-comments-enabled' value='true' labelKey='#i18n{portal.util.labelYes}' labelFor='extend-comment-delete-comments-enabled' orientation='' checked=commentConfig.deleteComments /> 
 			<@radioButton name='deleteComments' id='extend-comment-delete-comments-disabled' value='false' labelKey='#i18n{portal.util.labelNo}' labelFor='extend-comment-delete-comments-disabled' orientation='' checked=!commentConfig.deleteComments /> 
-		</@formGroup>
+		</@fieldSet>
 	</@columns>
 	<@columns md=6 lg=4 xl=3>
-		<@formGroup rows=2 labelKey='#i18n{module.extend.comment.comment_config.labelEnabledAuthMode}' labelFor='enabledAuthMode' >
+		<@fieldSet legend='#i18n{module.extend.comment.comment_config.labelEnabledAuthMode}' legendClass='form-label'>
 			<@radioButton name='enabledAuthMode' id='extend-comment-auth-mode-enabled' value='true' labelKey='#i18n{portal.util.labelYes}' labelFor='extend-comment-auth-mode-enabled' orientation='' checked=commentConfig.enabledAuthMode /> 
 			<@radioButton name='enabledAuthMode' id='extend-comment-auth-mode-disabled' value='false' labelKey='#i18n{portal.util.labelNo}' labelFor='extend-comment-auth-mode-disabled' orientation='' checked=!commentConfig.enabledAuthMode /> 
-		</@formGroup>
+		</@fieldSet>
 		<@formGroup rows=2 labelKey='#i18n{module.extend.comment.comment_config.labelMailingList}' labelFor='idMailingList' helpKey='#i18n{module.extend.comment.comment_config.labelMailingListComment}' >
 			<@select name='idMailingList' items=listIdsMailingList default_value='${commentConfig.idMailingList!}' />
 		</@formGroup>
