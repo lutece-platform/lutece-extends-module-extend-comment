@@ -292,6 +292,14 @@ public class CommentService implements ICommentService
 
         List<Comment> listCommentsPinned = findCommentsPinned( strIdExtendableResource, strExtendableResourceType, nNbComments,
                 bPublishedOnly ? Comment.COMMENT_STATE_PUBLISHED : null, true, bGetNumberSubComments, null );
+        if ( bGetNumberSubComments && bDisplaySubComments )
+        {
+            // The replies of a pinned comment are displayed as those of the other comments
+            for ( Comment comment : listCommentsPinned )
+            {
+                comment.setListSubComments( findByIdParent( comment.getIdComment( ), bPublishedOnly ) );
+            }
+        }
 
         listComments.addAll( listCommentsPinned );
 
