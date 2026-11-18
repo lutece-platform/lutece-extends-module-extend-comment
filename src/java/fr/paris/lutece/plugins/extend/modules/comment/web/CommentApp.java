@@ -728,7 +728,9 @@ public class CommentApp implements XPageApplication
             {
                 // A reply to a reply is attached to the top level comment
                 Comment parentComment = _commentService.findByPrimaryKey( nIdParentComment );
-                if ( parentComment == null )
+                // The parent must be a comment of the same resource: a reply never goes under the comment of another resource
+                if ( parentComment == null || !StringUtils.equals( parentComment.getIdExtendableResource( ), comment.getIdExtendableResource( ) )
+                        || !StringUtils.equals( parentComment.getExtendableResourceType( ), comment.getExtendableResourceType( ) ) )
                 {
                     nIdParentComment = 0;
                 }

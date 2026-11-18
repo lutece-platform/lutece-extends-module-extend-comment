@@ -189,4 +189,22 @@ public class CommentAppPopulateTest
         request.setParameter( "idParentComment", "abc" );
         assertEquals( 0, populate( request ).getIdParentComment( ) );
     }
+
+    @Test
+    public void ignoresAParentOfAnotherResource( ) throws Exception
+    {
+        Comment parent = comment( 30, 0 );
+        parent.setIdExtendableResource( "218" );
+        parent.setExtendableResourceType( "PAGE" );
+        _mapComments.put( 30, parent );
+
+        MockHttpServletRequest request = new MockHttpServletRequest( );
+        request.setParameter( "idExtendableResource", "219" );
+        request.setParameter( "extendableResourceType", "PAGE" );
+        request.setParameter( "idParentComment", "30" );
+        assertEquals( 0, populate( request ).getIdParentComment( ) );
+
+        request.setParameter( "idExtendableResource", "218" );
+        assertEquals( 30, populate( request ).getIdParentComment( ) );
+    }
 }
