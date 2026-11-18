@@ -958,7 +958,7 @@ public class CommentApp implements XPageApplication
                 // Remove the comment only if it does not have subcomments && the delete option is enabled
                 // and the user must be the author
                 if ( config.getDeleteComments( ) && comment.getEmail( ).equals( user.getEmail( ) )
-                        && ( comment.getListSubComments( ) == null || comment.getListSubComments( ).size( ) == 0 ) )
+                        && _commentService.countByIdParent( nIdComment, false ) == 0 )
                 {
                     _commentService.remove( nIdComment );
                 }

@@ -189,6 +189,11 @@ public class CommentService implements ICommentService
         {
             return;
         }
+        // The replies go away with their comment: they are no longer listed but would still be counted
+        for ( Comment reply : findByIdParent( nIdComment, false ) )
+        {
+            remove( reply.getIdComment( ) );
+        }
         if ( CommentListenerService.hasListener( ) )
         {
 
