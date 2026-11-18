@@ -421,9 +421,6 @@ public class CommentResourceExtenderComponent extends AbstractResourceExtenderCo
                 strFilterMarkAsImportant = request.getParameter( CommentConstants.PARAMETER_FILTER_MARK_AS_IMPORTANT );
             }
 
-            strCurrentPageIndex = String.valueOf( CommentApp.boundPageIndex( strCurrentPageIndex, nItemsCount, nItemsPerPage ) );
-            int nItemsOffset = nItemsPerPage * ( Integer.parseInt( strCurrentPageIndex ) - 1 );
-
             CommentFilter commentFilter = new CommentFilter( );
             if ( StringUtils.isNotBlank( strFilterState ) && StringUtils.isNumeric( strFilterState ) )
             {
@@ -439,6 +436,15 @@ public class CommentResourceExtenderComponent extends AbstractResourceExtenderCo
             }
             commentFilter.setSortedAttributeName( strSortedAttributeName );
             commentFilter.setAscSort( bIsAscSort );
+
+            // With a filter, the paginator counts the filtered comments only
+            if ( commentFilter.getCommentState( ) != null || StringUtils.isNotBlank( strFilterPinned ) || StringUtils.isNotBlank( strFilterMarkAsImportant ) )
+            {
+                nItemsCount = _commentService.findByResource( resourceExtender.getIdExtendableResource( ), resourceExtender.getExtendableResourceType( ),
+                        commentFilter, 0, 0, false ).size( );
+            }
+            strCurrentPageIndex = String.valueOf( CommentApp.boundPageIndex( strCurrentPageIndex, nItemsCount, nItemsPerPage ) );
+            int nItemsOffset = nItemsPerPage * ( Integer.parseInt( strCurrentPageIndex ) - 1 );
 
             List<Comment> listComments = _commentService.findByResource( resourceExtender.getIdExtendableResource( ),
                     resourceExtender.getExtendableResourceType( ), commentFilter, nItemsOffset, nItemsPerPage, config.getAuthorizeSubComments( ) );
@@ -523,6 +529,8 @@ public class CommentResourceExtenderComponent extends AbstractResourceExtenderCo
             session.setAttribute( CommentConstants.SESSION_COMMENT_ADMIN_IS_ASC_SORT, bIsAscSort );
             session.setAttribute( CommentConstants.SESSION_COMMENT_ADMIN_SORTED_ATTRIBUTE_NAME, strSortedAttributeName );
             session.setAttribute( CommentConstants.SESSION_COMMENT_ADMIN_FILTER_STATE, strFilterState );
+            session.setAttribute( CommentConstants.SESSION_COMMENT_ADMIN_FILTER_PINNED, strFilterPinned );
+            session.setAttribute( CommentConstants.SESSION_COMMENT_ADMIN_FILTER_MARK_AS_IMPORTANT, strFilterMarkAsImportant );
 
             String strContent = template.getHtml( );
 
