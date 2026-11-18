@@ -150,6 +150,10 @@ public final class CommentConstants
 
     public static final String SESSION_COMMENT_ITEMS_PER_PAGE = "session_comment_fo_items_per_page";
     public static final String SESSION_COMMENT_CURRENT_PAGE_INDEX = "session_comment_fo_current_page_index";
+    /** Resource whose page index is kept in session (front office) */
+    public static final String SESSION_COMMENT_CURRENT_PAGE_RESOURCE = "session_comment_fo_current_page_resource";
+    /** Extender whose page index is kept in session (back office) */
+    public static final String SESSION_COMMENT_ADMIN_CURRENT_PAGE_RESOURCE = "session_comment_bo_current_page_resource";
     public static final String SESSION_COMMENT_IS_ASC_SORT = "session_comment_fo_is_asc_sort";
     public static final String SESSION_COMMENT_ADMIN_ITEMS_PER_PAGE = "session_comment_bo_items_per_page";
     public static final String SESSION_COMMENT_ADMIN_CURRENT_PAGE_INDEX = "session_comment_bo_current_page_index";

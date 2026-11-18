@@ -51,6 +51,7 @@ import jakarta.servlet.http.HttpSession;
 import jakarta.validation.ConstraintViolation;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 
 import fr.paris.lutece.plugins.extend.modules.comment.business.AddCommentPosition;
 import fr.paris.lutece.plugins.extend.modules.comment.business.Comment;
@@ -269,8 +270,10 @@ public class CommentApp implements XPageApplication
         {
             nItemsPerPage = (Integer) object;
         }
+        // The page index kept in session is the one of the last resource displayed: another resource starts at its first page
+        String strPageResource = strExtendableResourceType + ":" + strIdExtendableResource;
         object = request.getSession( ).getAttribute( CommentConstants.SESSION_COMMENT_CURRENT_PAGE_INDEX );
-        if ( object != null )
+        if ( object != null && strPageResource.equals( request.getSession( ).getAttribute( CommentConstants.SESSION_COMMENT_CURRENT_PAGE_RESOURCE ) ) )
         {
             strCurrentPageIndex = (String) object;
         }
@@ -336,12 +339,12 @@ public class CommentApp implements XPageApplication
             bEnableAuthMode = config.isEnabledAuthMode( );
             strAdminBadge = config.getAdminBadge( );
         }
+        int nItemsCount = _commentService.getCommentNb( strIdExtendableResource, strExtendableResourceType, true, true );
+        strCurrentPageIndex = String.valueOf( boundPageIndex( strCurrentPageIndex, nItemsCount, nItemsPerPage ) );
         int nItemsOffset = nItemsPerPage * ( Integer.parseInt( strCurrentPageIndex ) - 1 );
 
         List<Comment> listItems = _commentService.findByResource( strIdExtendableResource, strExtendableResourceType, true, null, bIsAscSort, nItemsOffset,
                 nItemsPerPage, bGetSubComments );
-
-        int nItemsCount = _commentService.getCommentNb( strIdExtendableResource, strExtendableResourceType, true, true );
 
         IPaginator<Comment> paginator = new LocalizedDelegatePaginator<Comment>( listItems, nItemsPerPage, urlSort.getUrl( ), Paginator.PARAMETER_PAGE_INDEX,
                 strCurrentPageIndex, nItemsCount, request.getLocale( ) );
@@ -371,6 +374,7 @@ public class CommentApp implements XPageApplication
         HttpSession session = request.getSession( );
         session.setAttribute( CommentConstants.SESSION_COMMENT_ITEMS_PER_PAGE, nItemsPerPage );
         session.setAttribute( CommentConstants.SESSION_COMMENT_CURRENT_PAGE_INDEX, strCurrentPageIndex );
+        session.setAttribute( CommentConstants.SESSION_COMMENT_CURRENT_PAGE_RESOURCE, strPageResource );
         session.setAttribute( CommentConstants.SESSION_COMMENT_IS_ASC_SORT, bIsAscSort );
 
         return template.getHtml( );
@@ -979,5 +983,23 @@ public class CommentApp implements XPageApplication
         }
         redirectToLastUrl( request, CommentConstants.MESSAGE_ERROR_GENERIC_MESSAGE, strIdExtendableResource );
         return null;
+    }
+
+    /**
+     * Bounds a page index: a value that is not a number gives the first page, a page after the last one gives the last page
+     * 
+     * @param strPageIndex
+     *            the page index
+     * @param nItemsCount
+     *            the number of items
+     * @param nItemsPerPage
+     *            the number of items per page
+     * @return the page index, from 1 to the number of pages
+     */
+    public static int boundPageIndex( String strPageIndex, int nItemsCount, int nItemsPerPage )
+    {
+        int nPageIndex = Math.max( 1, NumberUtils.toInt( strPageIndex, 1 ) );
+        int nPagesCount = ( nItemsPerPage > 0 ) ? Math.max( 1, ( nItemsCount + nItemsPerPage - 1 ) / nItemsPerPage ) : 1;
+        return Math.min( nPageIndex, nPagesCount );
     }
 }

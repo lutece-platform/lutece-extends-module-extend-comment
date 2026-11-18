@@ -346,8 +346,10 @@ public class CommentResourceExtenderComponent extends AbstractResourceExtenderCo
             {
                 nItemsPerPage = (Integer) object;
             }
+            // The page index kept in session is the one of the last extender displayed: another extender starts at its first page
+            String strPageResource = String.valueOf( resourceExtender.getIdExtender( ) );
             object = request.getSession( ).getAttribute( CommentConstants.SESSION_COMMENT_ADMIN_CURRENT_PAGE_INDEX );
-            if ( object != null )
+            if ( object != null && strPageResource.equals( request.getSession( ).getAttribute( CommentConstants.SESSION_COMMENT_ADMIN_CURRENT_PAGE_RESOURCE ) ) )
             {
                 strCurrentPageIndex = (String) object;
             }
@@ -419,6 +421,7 @@ public class CommentResourceExtenderComponent extends AbstractResourceExtenderCo
                 strFilterMarkAsImportant = request.getParameter( CommentConstants.PARAMETER_FILTER_MARK_AS_IMPORTANT );
             }
 
+            strCurrentPageIndex = String.valueOf( CommentApp.boundPageIndex( strCurrentPageIndex, nItemsCount, nItemsPerPage ) );
             int nItemsOffset = nItemsPerPage * ( Integer.parseInt( strCurrentPageIndex ) - 1 );
 
             CommentFilter commentFilter = new CommentFilter( );
@@ -516,6 +519,7 @@ public class CommentResourceExtenderComponent extends AbstractResourceExtenderCo
             HttpSession session = request.getSession( );
             session.setAttribute( CommentConstants.SESSION_COMMENT_ADMIN_ITEMS_PER_PAGE, nItemsPerPage );
             session.setAttribute( CommentConstants.SESSION_COMMENT_ADMIN_CURRENT_PAGE_INDEX, strCurrentPageIndex );
+            session.setAttribute( CommentConstants.SESSION_COMMENT_ADMIN_CURRENT_PAGE_RESOURCE, strPageResource );
             session.setAttribute( CommentConstants.SESSION_COMMENT_ADMIN_IS_ASC_SORT, bIsAscSort );
             session.setAttribute( CommentConstants.SESSION_COMMENT_ADMIN_SORTED_ATTRIBUTE_NAME, strSortedAttributeName );
             session.setAttribute( CommentConstants.SESSION_COMMENT_ADMIN_FILTER_STATE, strFilterState );
