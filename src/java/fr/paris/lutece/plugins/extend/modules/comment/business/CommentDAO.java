@@ -71,6 +71,7 @@ public class CommentDAO implements ICommentDAO
     private static final String SQL_QUERY_DELETE = " DELETE FROM extend_comment WHERE id_comment = ? ";
     private static final String SQL_QUERY_DELETE_BY_ID_RESOURCE = " DELETE FROM extend_comment WHERE resource_type = ? ";
     private static final String SQL_QUERY_FILTER_ID_RESOURCE = " AND id_resource = ? ";
+    private static final String SQL_QUERY_FILTER_WITHOUT_SPECIFIC_EXTENDER = " AND id_resource NOT IN ( SELECT id_resource FROM extend_resource_extender WHERE extender_type = 'comment' AND resource_type = ? AND id_resource <> ? ) ";
     private static final String SQL_QUERY_UPDATE = " UPDATE extend_comment SET id_resource = ?, resource_type = ?, date_comment = ?, name = ?, email = ?, "
             + " ip_address = ?, comment = ?, is_published = ?, date_last_modif = ?, id_parent_comment = ?, is_admin_comment = ?,is_pinned = ?,comment_order = ?,is_important = ? WHERE id_comment = ?  ";
     private static final String SQL_QUERY_FIND_BY_ID_PARENT = SQL_QUERY_SELECT_ALL + " WHERE id_parent_comment = ? ";
@@ -187,15 +188,19 @@ public class CommentDAO implements ICommentDAO
     public void deleteByResource( String strIdExtendableResource, String strExtendableResourceType, Plugin plugin )
     {
         int nIndex = 1;
+        boolean bWildcard = ResourceExtenderDTOFilter.WILDCARD_ID_RESOURCE.equals( strIdExtendableResource );
         StringBuilder sbSql = new StringBuilder( SQL_QUERY_DELETE_BY_ID_RESOURCE );
-        if ( !ResourceExtenderDTOFilter.WILDCARD_ID_RESOURCE.equals( strIdExtendableResource ) )
-        {
-            sbSql.append( SQL_QUERY_FILTER_ID_RESOURCE );
-        }
+        // the wildcard keeps the comments of the resources that keep their own comment extender
+        sbSql.append( bWildcard ? SQL_QUERY_FILTER_WITHOUT_SPECIFIC_EXTENDER : SQL_QUERY_FILTER_ID_RESOURCE );
         try ( DAOUtil daoUtil = new DAOUtil( sbSql.toString( ), plugin ) )
         {
             daoUtil.setString( nIndex++, strExtendableResourceType );
-            if ( !ResourceExtenderDTOFilter.WILDCARD_ID_RESOURCE.equals( strIdExtendableResource ) )
+            if ( bWildcard )
+            {
+                daoUtil.setString( nIndex++, strExtendableResourceType );
+                daoUtil.setString( nIndex++, ResourceExtenderDTOFilter.WILDCARD_ID_RESOURCE );
+            }
+            else
             {
                 daoUtil.setString( nIndex++, strIdExtendableResource );
             }
